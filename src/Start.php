@@ -13,7 +13,7 @@ class Start
                 $plug['pid'] = posix_setsid();
                 $callBack = $plug['callbacks'][$callbackId];
                 if ('daemon'===$callBack['type']) { 
-                    while (!$plug['isStopAll']) {
+                    while (!$plug['isStopMe']) {
                         call_user_func_array(
                             $callBack["callback"],
                             $callBack["args"]

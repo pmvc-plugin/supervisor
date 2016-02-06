@@ -18,5 +18,6 @@ class fakeDaemon
     function __invoke($s, $exit)
     {
         echo "aaaaaaaaaaaaaaaaaaaaa";
+        exit();
     }
 }

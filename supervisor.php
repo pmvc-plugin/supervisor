@@ -12,13 +12,14 @@ class supervisor extends \PMVC\PlugIn
         $this['children'] = array();
         $this['parent'] = null;
         $this['isStopAll'] = false;
+        $this['isStopMe'] = false;
         $this['pid'] = posix_getpid();
         $this->start = new Start();
         $this->stop = new Stop();
         $this->signal = new Signal();
     }
 
-    public function process($callBack = null)
+    public function process(callable $callBack = null)
     {
         new Monitor($callBack); 
     }

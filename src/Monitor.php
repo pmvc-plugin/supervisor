@@ -7,7 +7,7 @@ class Monitor
     {
         $plug = \PMVC\plug('supervisor');
         while(empty($plug['isStopAll']) 
-            || count($plug['children'])){
+            && count($plug['children'])){
 
             // Check for exited children
             $pid = pcntl_wait($status, WNOHANG);

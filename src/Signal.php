@@ -20,7 +20,7 @@ class Signal
     {
         $plug = \PMVC\plug('supervisor');
         if (!empty($plug['parent'])) {
-            $plug['isStopAll'] = true;
+            $plug['isStopMe'] = true;
             return;
         }
         static $term_count = 0;
