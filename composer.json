@@ -1,0 +1,23 @@
+{
+    "name": "pmvc-plugin/supervisor",
+    "description": "supervisor for daemon, service, etc...",
+    "type": "library",
+    "keywords": ["supervisor", "pmvc", "plug-in"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Hill",
+            "email": "hill@kimo.com"
+        }
+    ],
+    "require": {
+        "pmvc/pmvc": "*",
+        "ext-pcntl": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "PMVC\\PlugIn\\supervisor\\": "./src"
+        }
+    },
+    "minimum-stability": "dev"
+}
