@@ -7,7 +7,7 @@ class Monitor
     {
         $plug = \PMVC\plug(PLUGIN);
         while(empty($plug[IS_STOP_ALL]) 
-            && count($plug[CHILDREN])){
+            || count($plug[CHILDREN])){
 
             // Check for exited children
             $pid = pcntl_wait($status, WNOHANG);
@@ -23,6 +23,9 @@ class Monitor
                     $plug['start']->restore($callbackId);
                 }
                 $plug->cleanPid($pid);
+                if (empty($plug[CHILDREN])) {
+                    break;
+                }
             }
 
             if ($callBack) {
