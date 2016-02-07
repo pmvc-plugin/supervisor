@@ -13,10 +13,20 @@ class Signal
 
     /**
      * Handles signals.
+     * SIGHUP: kill -HUP pid
+     * SIGINT: ctrl + c 
+     * SIGTERM: kill pid
      */
     public function __invoke($signo)
     {
         $plug = \PMVC\plug('supervisor');
+        $name = array (
+            SIGINT  => 'SIGINT',
+            SIGTERM => 'SIGTERM',
+            SIGHUP  => 'SIGHUP'
+        );
+        $isParent = (empty($plug['parent'])) ? 'Parent' : 'Child';
+        $plug->log($isParent.' PID: '.$plug['pid'].' recieve '.$name[$signo]);
         if (!empty($plug['parent'])) {
             $plug['isStopMe'] = true;
             return;
@@ -25,7 +35,7 @@ class Signal
         switch ($signo) {
             case SIGINT:
             case SIGTERM:
-                $plug->log("Shutting down...");
+                $plug->log('Shutting down...');
                 $term_count++;
                 if ($term_count < 5) {
                     $plug->stop($signo);

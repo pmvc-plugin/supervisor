@@ -3,17 +3,37 @@ namespace PMVC\PlugIn\supervisor;
 use SplFixedArray;
 ${_INIT_CONFIG}[_CLASS] = __NAMESPACE__.'\supervisor';
 
+define('PLUGIN','xxx');
+
+// storage
+const CALLBACKS = 'callbacks';
+const CHILDREN = 'children';
+const MY_PARENT = 'parent';
+const IS_STOP_ALL = 'isStopAll';
+const IS_STOP_ME = 'isStopMe';
+const PID = 'pid';
+const START_TIME = 'startTime';
+// child
+const CALLBACK = 'callback'; 
+const ARGS = 'args';
+const TYPE = 'type';
+const TYPE_SCRIPT = 'script';
+const TYPE_DAEMON = 'daemon';
+const DELAY = 'delay';
+const DELAY_FUNCTION = 'delayFunction';
+const PLUGIN = 'supervisor';
+
 class supervisor extends \PMVC\PlugIn
 {
     private $num = 0;
     public function init()
     {
-        $this['callbacks'] = new SplFixedArray(1);
-        $this['children'] = array();
-        $this['parent'] = null;
-        $this['isStopAll'] = false;
-        $this['isStopMe'] = false;
-        $this['pid'] = posix_getpid();
+        $this[CALLBACKS] = new SplFixedArray(1);
+        $this[CHILDREN] = array();
+        $this[MY_PARENT] = null;
+        $this[IS_STOP_ALL] = false;
+        $this[IS_STOP_ME] = false;
+        $this[PID] = posix_getpid();
         new Signal();
         $this->start = new Start();
         $this->stop = new Stop();
@@ -29,10 +49,10 @@ class supervisor extends \PMVC\PlugIn
         array $args = array()
     )
     {
-        $this['callbacks'][$this->num] = array(
-            'callback' => $callback,
-            'args' => $args,
-            'type' => 'script' 
+        $this[CALLBACKS][$this->num] = array(
+            CALLBACK => $callback,
+            ARGS => $args,
+            TYPE => TYPE_SCRIPT 
         );
         $this->_increase();
     }
@@ -41,15 +61,15 @@ class supervisor extends \PMVC\PlugIn
         callable $callback, 
         array $args = array(),
         $delay = 1,
-        $sleepFunc = 'sleep'
+        $delayFunction = 'sleep'
     )
     {
-        $this['callbacks'][$this->num] = array(
-            'callback' => $callback,
-            'args' => $args,
-            'type' => 'daemon',
-            'delay' => $delay,
-            'sleepFunc' => $sleepFunc
+        $this[CALLBACKS][$this->num] = array(
+            CALLBACK => $callback,
+            ARGS => $args,
+            TYPE => TYPE_DAEMON,
+            DELAY => $delay,
+            DELAY_FUNCTION => $delayFunction
         );
         $this->_increase();
     }
@@ -59,22 +79,22 @@ class supervisor extends \PMVC\PlugIn
         $this->start($this->num);
         $this->num++;
         $size = $this->num + 1;
-        $this['callbacks']->setSize($size);
+        $this[CALLBACKS]->setSize($size);
     }
 
     public function updateCall($callbackId, $arr)
     {
-        $this['callbacks'][$callbackId] = $arr + $this['callbacks'][$callbackId];
+        $this[CALLBACKS][$callbackId] = $arr + $this[CALLBACKS][$callbackId];
     }
 
     public function pid($pid, $callbackId)
     {
-        $this['children'][$pid] = $callbackId;
+        $this[CHILDREN][$pid] = $callbackId;
     }
 
     public function cleanPid($pid)
     {
-        unset($this['children'][$pid]);
+        unset($this[CHILDREN][$pid]);
     }
 
     public function log($log)

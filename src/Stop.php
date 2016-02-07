@@ -4,13 +4,13 @@ class Stop
 {
     public function __invoke($signal = SIGTERM)
     {
-        $plug = \PMVC\plug('supervisor');
+        $plug = \PMVC\plug(PLUGIN);
         if (SIGKILL===$signal) {
-            $plug['isStopAll'] = true;
+            $plug[IS_STOP_ALL] = true;
             return $this->termAll($signal);
         }
-        if(empty($plug['isStopAll'])){
-            $plug['isStopAll'] = true;
+        if(empty($plug[IS_STOP_ALL])){
+            $plug[IS_STOP_ALL] = true;
             $plug->log("Stopping children");
             $this->termAll($signal);
         }
@@ -18,8 +18,8 @@ class Stop
 
     public function termAll($signal = SIGTERM)
     {
-        $plug = \PMVC\plug('supervisor');
-        foreach($plug['children'] as $pid => $child){
+        $plug = \PMVC\plug(PLUGIN);
+        foreach($plug[CHILDREN] as $pid => $child){
             $plug->log("Stopping child $pid");
             $this->termOne($pid, $signal);
         }
@@ -27,8 +27,8 @@ class Stop
 
     public function termOne($pid, $signal = SIGTERM)
     {
-        $plug = \PMVC\plug('supervisor');
-        if(isset($plug['children'][$pid])){
+        $plug = \PMVC\plug(PLUGIN);
+        if(isset($plug[CHILDREN][$pid])){
             $result = posix_kill($pid, $signal);
         }
     }

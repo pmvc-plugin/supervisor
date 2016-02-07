@@ -5,43 +5,42 @@ class Start
     public function __invoke($callbackId)
     {
         $pid = pcntl_fork();
-        $plug = \PMVC\plug('supervisor');
+        $plug = \PMVC\plug(PLUGIN);
         switch ($pid) {
             case 0:
-                $plug = \PMVC\plug('supervisor');
-                $plug['parent'] = $plug['pid'];
-                $plug['pid'] = posix_setsid();
-                $callBack = $plug['callbacks'][$callbackId];
-                if ('daemon'===$callBack['type']) { 
-                    while (!$plug['isStopMe']) {
+                $plug[MY_PARENT] = $plug[PID];
+                $plug[PID] = posix_setsid();
+                $callBack = $plug[CALLBACKS][$callbackId];
+                if (TYPE_DAEMON === $callBack[TYPE]) { 
+                    while (!$plug[IS_STOP_ME]) {
                         call_user_func_array(
-                            $callBack["callback"],
-                            $callBack["args"]
+                            $callBack[CALLBACK],
+                            $callBack[ARGS]
                         );
                         call_user_func(
-                            $callBack['sleepFunc'],
-                            $callBack['delay']
+                            $callBack[DELAY_FUNCTION],
+                            $callBack[DELAY]
                         );
                         pcntl_signal_dispatch();
                     }
                 } else {
                     call_user_func_array(
-                        $callBack["callback"],
-                        $callBack["args"]
+                        $callBack[CALLBACK],
+                        $callBack[ARGS]
                     );
                 }
                 exit(0);
                 break;
             case -1:
                 $plug->log("Failed to fork");
-                $plug['isStopAll'] = true;
+                $plug[IS_STOP_ALL] = true;
                 break;
             default:
                 $now = microtime(true) * 1000;
                 $plug->pid($pid, $callbackId);
                 $plug->updateCall($callbackId, array(
-                    "pid" => $pid,
-                    "startTime" => $now
+                    PID => $pid,
+                    START_TIME => $now
                 ));
                 $plug->log("Child forked with pid $pid");
                 break;
@@ -50,21 +49,21 @@ class Start
 
     public function restore($callbackId)
     {
-        $plug = \PMVC\plug('supervisor');
-        if ('daemon'===$plug['callbacks'][$callbackId]['type']) {
+        $plug = \PMVC\plug(PLUGIN);
+        if (TYPE_DAEMON === $plug[CALLBACKS][$callbackId][TYPE]) {
             $this->__invoke($callbackId);
         }
     }
 
     public function restart()
     {
-        $plug = \PMVC\plug('supervisor');
-        $plug->log("Restarting children");
-        foreach($plug['children'] as $pid => $child){
-            if ('daemon'!==$plug['callbacks'][$child]['type']) {
+        $plug = \PMVC\plug(PLUGIN);
+        $plug->log('Restarting children');
+        foreach($plug[CHILDREN] as $pid => $callbackId){
+            if (TYPE_DAEMON !== $plug[CALLBACKS][$callbackId][TYPE]) {
                 continue;
             }
-            $plug->log("Stopping child $pid");
+            $plug->log('Stopping child '.$pid);
             $plug['stop']->termOne($pid);
         }
     }

@@ -3,23 +3,23 @@ namespace PMVC\PlugIn\supervisor;
 
 class Monitor 
 {
-    public function __construct($callBack = null)
+    public function __construct(callable $callBack = null)
     {
-        $plug = \PMVC\plug('supervisor');
-        while(empty($plug['isStopAll']) 
-            && count($plug['children'])){
+        $plug = \PMVC\plug(PLUGIN);
+        while(empty($plug[IS_STOP_ALL]) 
+            && count($plug[CHILDREN])){
 
             // Check for exited children
             $pid = pcntl_wait($status, WNOHANG);
-            if(isset($plug['children'][$pid])){
+            if(isset($plug[CHILDREN][$pid])){
                 $exitCode = pcntl_wexitstatus($status);
                 $plug->log(
                     "Child $pid was stopped with exit code of $exitCode"
                 );
-                if( !$plug['isStopAll'] 
-                    && 1 !==$exitCode 
+                if( !$plug[IS_STOP_ALL] 
+                    && 1 !== $exitCode 
                 ){
-                    $callbackId = $plug['children'][$pid];
+                    $callbackId = $plug[CHILDREN][$pid];
                     $plug['start']->restore($callbackId);
                 }
                 $plug->cleanPid($pid);
@@ -28,6 +28,7 @@ class Monitor
             if ($callBack) {
                 call_user_func($callBack);
             }
+
             // php will eat up your cpu if you don't have this
             usleep(50000);
             pcntl_signal_dispatch();
