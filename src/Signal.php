@@ -1,22 +1,20 @@
 <?php
 namespace PMVC\PlugIn\supervisor;
 
-
 class Signal 
 {
     public function __construct()
     {
         $arr = array(SIGTERM, SIGINT, SIGHUP);
-        $func = array($this, 'signal');
         foreach ($arr as $sign) {
-            pcntl_signal($sign, $func);
+            pcntl_signal($sign, $this);
         }
     }
 
     /**
      * Handles signals.
      */
-    function signal($signo)
+    public function __invoke($signo)
     {
         $plug = \PMVC\plug('supervisor');
         if (!empty($plug['parent'])) {

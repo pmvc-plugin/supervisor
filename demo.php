@@ -2,7 +2,7 @@
 include("vendor/autoload.php");
 PMVC\Load::plug();
 PMVC\addPlugInFolder('../');
-$s = 'hello';
+$s = 'hello'."\n";
 $plug = PMVC\plug('supervisor');
 $plug->daemon(new fakeDaemon(), array($s, 1));
 $plug->process(function() use($plug){
@@ -17,7 +17,7 @@ class fakeDaemon
 {
     function __invoke($s, $exit)
     {
-        echo "aaaaaaaaaaaaaaaaaaaaa";
-        exit();
+        echo $s;
+        exit($exit);
     }
 }

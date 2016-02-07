@@ -14,9 +14,9 @@ class supervisor extends \PMVC\PlugIn
         $this['isStopAll'] = false;
         $this['isStopMe'] = false;
         $this['pid'] = posix_getpid();
+        new Signal();
         $this->start = new Start();
         $this->stop = new Stop();
-        $this->signal = new Signal();
     }
 
     public function process(callable $callBack = null)
@@ -75,6 +75,7 @@ class supervisor extends \PMVC\PlugIn
 
     public function log($log)
     {
-        echo $log."\n";
+        list($sec, $ms) = explode('.', number_format(microtime(true), 3));
+        echo '['.date('Y-m-d H:i:s').'.'.$ms.'] '.$log."\n";
     }
 }
