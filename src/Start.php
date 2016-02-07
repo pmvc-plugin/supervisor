@@ -58,8 +58,14 @@ class Start
 
     public function restart()
     {
-        //Todo
         $plug = \PMVC\plug('supervisor');
         $plug->log("Restarting children");
+        foreach($plug['children'] as $pid => $child){
+            if ('daemon'!==$plug['callbacks'][$child]['type']) {
+                continue;
+            }
+            $plug->log("Stopping child $pid");
+            $plug['stop']->termOne($pid);
+        }
     }
 }
