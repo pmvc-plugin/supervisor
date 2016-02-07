@@ -4,7 +4,7 @@ PMVC\Load::plug();
 PMVC\addPlugInFolder('../');
 $s = 'hello'."\n";
 $plug = PMVC\plug('supervisor');
-$plug->daemon(new fakeDaemon(), array($s, 1));
+$plug->daemon(new fakeDaemon(), array($s, 0), 3);
 $plug->process(function() use($plug){
     static $i = 0;
     if ($i) {
@@ -17,7 +17,8 @@ class fakeDaemon
 {
     function __invoke($s, $exit)
     {
-        echo $s;
-        exit($exit);
+        $plug = PMVC\plug('supervisor');
+        echo $plug['pid'].'--'.$s;
+//        exit($exit);
     }
 }

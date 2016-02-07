@@ -39,13 +39,17 @@ class supervisor extends \PMVC\PlugIn
 
     public function daemon ( 
         callable $callback, 
-        array $args = array()
+        array $args = array(),
+        $delay = 1,
+        $sleepFunc = 'sleep'
     )
     {
         $this['callbacks'][$this->num] = array(
             'callback' => $callback,
             'args' => $args,
-            'type' => 'daemon'
+            'type' => 'daemon',
+            'delay' => $delay,
+            'sleepFunc' => $sleepFunc
         );
         $this->_increase();
     }

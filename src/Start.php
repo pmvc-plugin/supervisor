@@ -18,7 +18,10 @@ class Start
                             $callBack["callback"],
                             $callBack["args"]
                         );
-                        usleep(50000);
+                        call_user_func(
+                            $callBack['sleepFunc'],
+                            $callBack['delay']
+                        );
                         pcntl_signal_dispatch();
                     }
                 } else {
@@ -51,5 +54,12 @@ class Start
         if ('daemon'===$plug['callbacks'][$callbackId]['type']) {
             $this->__invoke($callbackId);
         }
+    }
+
+    public function restart()
+    {
+        //Todo
+        $plug = \PMVC\plug('supervisor');
+        $plug->log("Restarting children");
     }
 }

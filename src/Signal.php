@@ -34,7 +34,7 @@ class Signal
                 }
                 break;
             case SIGHUP:
-                $plug->restart();
+                $plug['start']->restart();
                 break;
         }
     }
