@@ -25,7 +25,7 @@ class SupervisorTest extends PHPUnit_Framework_TestCase
     {
         $plug = PMVC\plug($this->_plug);
         $s = 'hello';
-        $plug->script(new fakeChild(), array($s, 1));
+        $plug->script(new fakeChild(), array($s, 0));
         $self = $this;
         $plug->process(function() use($plug, $self, $s){
             $plug->stop();
@@ -40,14 +40,27 @@ class SupervisorTest extends PHPUnit_Framework_TestCase
         $plug->daemon(new fakeDaemon(), array($s, 1));
         $self = $this;
         $plug->process(function() use($plug, $self){
-                $plug->stop();
-                $self->assertEquals('daemon',$plug['callbacks'][0]['type']);
+            $plug->stop();
+            $self->assertEquals('daemon',$plug['callbacks'][0]['type']);
         });
     }
 
-    function testChildExitByItSelf()
+    function testTrigger()
     {
         $plug = PMVC\plug($this->_plug);
+        $s = 'hello';
+        $self = $this;
+        $childKey = $plug->script(new fakeChild(), array($s, 3));
+        $second = $plug->script(new fakeChild(), array($s, 4), $childKey);
+        $plug->process(function() use($plug, $self, $second){
+            static $i = 0;
+            if (!$i) {
+                $self->assertTrue(empty($plug['callbacks'][$second]['startTime']));
+            } else {
+                $self->assertFalse(empty($plug['callbacks'][$second]['startTime']));
+            }
+            $i++;
+        });
     }
 }
 
@@ -64,6 +77,6 @@ class fakeDaemon
 {
     function __invoke($s, $exit)
     {
-        echo "aaaaaaaaaaaaaaaaaaaaa";
+        echo "Daemon \n";
     }
 }

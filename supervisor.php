@@ -15,6 +15,7 @@ const PID = 'pid';
 const START_TIME = 'startTime';
 // child
 const CALLBACK = 'callback'; 
+const QUEUE = 'queue'; 
 const ARGS = 'args';
 const TYPE = 'type';
 const TYPE_SCRIPT = 'script';
@@ -46,7 +47,8 @@ class supervisor extends \PMVC\PlugIn
 
     public function script (
         callable $callback, 
-        array $args = array()
+        array $args = array(),
+        $trigger = null
     )
     {
         $this[CALLBACKS][$this->num] = array(
@@ -54,7 +56,7 @@ class supervisor extends \PMVC\PlugIn
             ARGS => $args,
             TYPE => TYPE_SCRIPT 
         );
-        $this->_increase();
+        return $this->_increase($trigger);
     }
 
     public function daemon ( 
@@ -71,15 +73,19 @@ class supervisor extends \PMVC\PlugIn
             DELAY => $delay,
             DELAY_FUNCTION => $delayFunction
         );
-        $this->_increase();
+        return $this->_increase();
     }
 
-    private function _increase()
+    private function _increase($trigger=null)
     {
-        $this->start($this->num);
-        $this->num++;
-        $size = $this->num + 1;
+        if (is_null($trigger)) {
+            $this->start($this->num);
+        } else {
+            $this[QUEUE][$trigger] = $this->num; 
+        }
+        $size = $this->num + 2;
         $this[CALLBACKS]->setSize($size);
+        return $this->num++;
     }
 
     public function updateCall($callbackId, $arr)
@@ -94,6 +100,10 @@ class supervisor extends \PMVC\PlugIn
 
     public function cleanPid($pid)
     {
+        $key = $this[CHILDREN][$pid];
+        if (isset($this[QUEUE][$key])) {
+            $this->start($this[QUEUE][$key]);
+        }
         unset($this[CHILDREN][$pid]);
     }
 
