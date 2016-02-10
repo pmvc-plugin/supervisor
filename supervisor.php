@@ -78,7 +78,7 @@ class supervisor extends \PMVC\PlugIn
 
     private function _increase($trigger=null)
     {
-        if (is_null($trigger)) {
+        if (is_null($trigger) || empty($this[CALLBACKS][$trigger])) {
             $this->start($this->num);
         } else {
             $this[QUEUE][$trigger] = $this->num; 
