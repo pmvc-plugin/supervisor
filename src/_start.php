@@ -1,5 +1,6 @@
 <?php
 namespace PMVC\PlugIn\supervisor;
+${_INIT_CONFIG}[_CLASS] = __NAMESPACE__.'\Start';
 class Start
 {
     public function __invoke($callbackId)
@@ -12,6 +13,7 @@ class Start
                 $plug[PID] = posix_setsid();
                 $callBack = $plug[CALLBACKS][$callbackId];
                 if (TYPE_DAEMON === $callBack[TYPE]) { 
+                    $plug->log("Start as deamon");
                     while (!$plug[IS_STOP_ME]) {
                         call_user_func_array(
                             $callBack[CALLBACK],
@@ -24,6 +26,7 @@ class Start
                         pcntl_signal_dispatch();
                     }
                 } else {
+                    $plug->log("Start as script");
                     call_user_func_array(
                         $callBack[CALLBACK],
                         $callBack[ARGS]
@@ -33,7 +36,7 @@ class Start
                 break;
             case -1: // for fail
                 $plug->log("Failed to fork");
-                $plug[IS_STOP_ALL] = true;
+                $plug->forceStop();
                 break;
             default: // parent process
                 $now = microtime(true) * 1000;
@@ -63,7 +66,6 @@ class Start
             if (TYPE_DAEMON !== $plug[CALLBACKS][$callbackId][TYPE]) {
                 continue;
             }
-            $plug->log('Stopping child '.$pid);
             $plug['stop']->termOne($pid);
         }
     }

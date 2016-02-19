@@ -2,8 +2,7 @@
 namespace PMVC\PlugIn\supervisor;
 use SplFixedArray;
 ${_INIT_CONFIG}[_CLASS] = __NAMESPACE__.'\supervisor';
-
-define('PLUGIN','xxx');
+\PMVC\l(__DIR__.'/src/Signal.php');
 
 // storage
 const CALLBACKS = 'callbacks';
@@ -13,6 +12,8 @@ const IS_STOP_ALL = 'isStopAll';
 const IS_STOP_ME = 'isStopMe';
 const PID = 'pid';
 const START_TIME = 'startTime';
+const MONITOR = 'monitor';
+const LOG_NUM = 'log';
 // child
 const CALLBACK = 'callback'; 
 const QUEUE = 'queue'; 
@@ -26,23 +27,27 @@ const PLUGIN = 'supervisor';
 
 class supervisor extends \PMVC\PlugIn
 {
-    private $num = 0;
-    public function init()
+    private $num;
+    public function __construct()
     {
         $this[CALLBACKS] = new SplFixedArray(1);
         $this[CHILDREN] = array();
         $this[MY_PARENT] = null;
         $this[IS_STOP_ALL] = false;
         $this[IS_STOP_ME] = false;
+        $this[MONITOR] = true;
         $this[PID] = posix_getpid();
+        $this[LOG_NUM] = 0;
+        $this->num = 0;
         new Signal();
-        $this->start = new Start();
-        $this->stop = new Stop();
     }
 
     public function process(callable $callBack = null)
     {
-        new Monitor($callBack); 
+        if (empty($this[MY_PARENT])) {
+            \PMVC\l(__DIR__.'/src/Monitor.php');
+            new Monitor($callBack); 
+        }
     }
 
     public function script (
@@ -76,6 +81,11 @@ class supervisor extends \PMVC\PlugIn
         return $this->_increase();
     }
 
+    public function forceStop()
+    {
+        $this->stop(SIGKILL);
+    }
+
     private function _increase($trigger=null)
     {
         if (is_null($trigger) || empty($this[CALLBACKS][$trigger])) {
@@ -106,6 +116,7 @@ class supervisor extends \PMVC\PlugIn
         $key = $this[CHILDREN][$pid];
         if (isset($this[QUEUE][$key])) {
             foreach ($this[QUEUE][$key] as $next) {
+                $this->log('Start queue: '.$next);
                 $this->start($next);
             }
             unset($this[QUEUE][$key]);
@@ -119,14 +130,17 @@ class supervisor extends \PMVC\PlugIn
      */
     public function __destruct()
     {
-        if (!empty($this[CHILDREN])) {
+        if (!empty($this[CHILDREN]) && $this[MONITOR]) {
             $this->process();
         }
     }
 
     public function log($log)
     {
+        $isParent = (empty($this['parent'])) ? 'Parent' : 'Child';
+        $isParent.=' '.$this['pid'];
         list($sec, $ms) = explode('.', number_format(microtime(true), 3));
-        echo '['.date('Y-m-d H:i:s').'.'.$ms.'] '.$log."\n";
+        echo $this[LOG_NUM].' '.$isParent.' ['.date('Y-m-d H:i:s').'.'.$ms.'] '.$log."\n";
+        $this[LOG_NUM]++;
     }
 }

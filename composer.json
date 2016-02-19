@@ -14,10 +14,5 @@
         "pmvc/pmvc": "*",
         "ext-pcntl": "*"
     },
-    "autoload": {
-        "psr-4": {
-            "PMVC\\PlugIn\\supervisor\\": "./src"
-        }
-    },
     "minimum-stability": "dev"
 }

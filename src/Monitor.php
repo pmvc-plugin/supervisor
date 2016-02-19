@@ -1,13 +1,14 @@
 <?php
 namespace PMVC\PlugIn\supervisor;
-
 class Monitor 
 {
     public function __construct(callable $callBack = null)
     {
         $plug = \PMVC\plug(PLUGIN);
         while(empty($plug[IS_STOP_ALL]) 
-            || count($plug[CHILDREN])){
+            && count($plug[CHILDREN])
+            && empty($plug[MY_PARENT])
+            ){
 
             // Check for exited children
             $pid = pcntl_wait($status, WNOHANG);
@@ -27,11 +28,10 @@ class Monitor
                     break;
                 }
             }
-
+            pcntl_signal_dispatch();
             if ($callBack) {
                 call_user_func($callBack);
             }
-
             // php will eat up your cpu if you don't have this
             usleep(50000);
             pcntl_signal_dispatch();

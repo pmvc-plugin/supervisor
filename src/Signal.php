@@ -1,6 +1,5 @@
 <?php
 namespace PMVC\PlugIn\supervisor;
-
 class Signal 
 {
     public function __construct()
@@ -25,8 +24,7 @@ class Signal
             SIGTERM => 'SIGTERM',
             SIGHUP  => 'SIGHUP'
         );
-        $isParent = (empty($plug['parent'])) ? 'Parent' : 'Child';
-        $plug->log($isParent.' PID: '.$plug['pid'].' recieve '.$name[$signo]);
+        $plug->log('Recieve '.$name[$signo]);
         if (!empty($plug['parent'])) {
             $plug['isStopMe'] = true;
             return;
