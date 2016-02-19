@@ -81,7 +81,10 @@ class supervisor extends \PMVC\PlugIn
         if (is_null($trigger) || empty($this[CALLBACKS][$trigger])) {
             $this->start($this->num);
         } else {
-            $this[QUEUE][$trigger] = $this->num; 
+            if (!isset($this[QUEUE][$trigger])) {
+                $this[QUEUE][$trigger] = array();
+            }
+            $this[QUEUE][$trigger][] = $this->num; 
         }
         $size = $this->num + 2;
         $this[CALLBACKS]->setSize($size);
@@ -102,9 +105,23 @@ class supervisor extends \PMVC\PlugIn
     {
         $key = $this[CHILDREN][$pid];
         if (isset($this[QUEUE][$key])) {
-            $this->start($this[QUEUE][$key]);
+            foreach ($this[QUEUE][$key] as $next) {
+                $this->start($next);
+            }
+            unset($this[QUEUE][$key]);
         }
         unset($this[CHILDREN][$pid]);
+    }
+
+    /**
+     * Force Start Monitor When child not empty 
+     * http://stackoverflow.com/questions/230245/destruct-visibility-for-php
+     */
+    public function __destruct()
+    {
+        if (!empty($this[CHILDREN])) {
+            $this->process();
+        }
     }
 
     public function log($log)

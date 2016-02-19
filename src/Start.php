@@ -4,10 +4,10 @@ class Start
 {
     public function __invoke($callbackId)
     {
-        $pid = pcntl_fork();
         $plug = \PMVC\plug(PLUGIN);
+        $pid = pcntl_fork();
         switch ($pid) {
-            case 0:
+            case 0: //fork
                 $plug[MY_PARENT] = $plug[PID];
                 $plug[PID] = posix_setsid();
                 $callBack = $plug[CALLBACKS][$callbackId];
@@ -31,11 +31,11 @@ class Start
                 }
                 exit(0);
                 break;
-            case -1:
+            case -1: // for fail
                 $plug->log("Failed to fork");
                 $plug[IS_STOP_ALL] = true;
                 break;
-            default:
+            default: // parent process
                 $now = microtime(true) * 1000;
                 $plug->pid($pid, $callbackId);
                 $plug->updateCall($callbackId, array(
