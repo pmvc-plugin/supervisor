@@ -5,11 +5,10 @@ class Monitor
     public function __construct(callable $callBack = null)
     {
         $plug = \PMVC\plug(PLUGIN);
-        while(empty($plug[IS_STOP_ALL]) 
-            && count($plug[CHILDREN])
-            && empty($plug[MY_PARENT])
-            ){
-
+        while( empty($plug[IS_STOP_ALL]) || count($plug[CHILDREN]) ){
+            if (!empty($plug[MY_PARENT])) {
+                break;
+            }
             // Check for exited children
             $pid = pcntl_wait($status, WNOHANG);
             if(isset($plug[CHILDREN][$pid])){
@@ -24,12 +23,13 @@ class Monitor
                     $plug['start']->restore($callbackId);
                 }
                 $plug->cleanPid($pid);
-                if (empty($plug[CHILDREN])) {
-                    break;
-                }
             }
             pcntl_signal_dispatch();
-            if ($callBack) {
+            if (empty($plug[CHILDREN])) {
+                $plug[IS_STOP_ALL] = true;
+                break;
+            }
+            if ($callBack && empty($plug[IS_STOP_ALL])) {
                 call_user_func($callBack);
             }
             // php will eat up your cpu if you don't have this

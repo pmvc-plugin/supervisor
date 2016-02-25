@@ -5,12 +5,11 @@ class SupervisorTest extends PHPUnit_Framework_TestCase
 {
     private $_plug = 'supervisor';
 
-    function setup()
+    function tearDown()
     {
         if (\PMVC\exists($this->_plug,'plugin')) {
             \PMVC\unplug($this->_plug);
         }
-
     }
 
     function testPlugin()
