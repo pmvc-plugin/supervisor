@@ -140,7 +140,7 @@ class supervisor extends \PMVC\PlugIn
         $isParent = (empty($this['parent'])) ? 'Parent' : 'Child';
         $isParent.=' '.$this['pid'];
         list($sec, $ms) = explode('.', number_format(microtime(true), 3));
-        echo $this[LOG_NUM].' '.$isParent.' ['.date('Y-m-d H:i:s').'.'.$ms.'] '.$log."\n";
+        echo $isParent.'-'.$this[LOG_NUM].' ['.date('Y-m-d H:i:s').'.'.$ms.'] '.$log."\n";
         $this[LOG_NUM]++;
     }
 }

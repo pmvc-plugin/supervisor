@@ -5,6 +5,7 @@ class Monitor
     public function __construct(callable $callBack = null)
     {
         $plug = \PMVC\plug(PLUGIN);
+        $plug->log("Monitor starting.");
         while( empty($plug[IS_STOP_ALL]) || count($plug[CHILDREN]) ){
             if (!empty($plug[MY_PARENT])) {
                 break;
@@ -36,5 +37,6 @@ class Monitor
             usleep(50000);
             pcntl_signal_dispatch();
         }
+        $plug->log("Monitor was exited.");
     }
 }

@@ -33,7 +33,7 @@ class Signal
         switch ($signo) {
             case SIGINT:
             case SIGTERM:
-                $plug->log('Shutting down...');
+                $plug->log('Ask start to shutting down...');
                 $term_count++;
                 if ($term_count < 5) {
                     $plug->stop($signo);

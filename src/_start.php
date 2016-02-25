@@ -13,7 +13,7 @@ class Start
                 $plug[PID] = posix_setsid();
                 $callBack = $plug[CALLBACKS][$callbackId];
                 if (TYPE_DAEMON === $callBack[TYPE]) { 
-                    $plug->log("Start as deamon");
+                    $plug->log("Start as daemon");
                     while (!$plug[IS_STOP_ME]) {
                         call_user_func_array(
                             $callBack[CALLBACK],
