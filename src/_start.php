@@ -35,8 +35,10 @@ class Start
                 exit(0);
                 break;
             case -1: // for fail
+                $plug[MY_PARENT] = $plug[PID];
+                $plug[PID] = posix_setsid();
                 $plug->log("Failed to fork");
-                $plug->forceStop();
+                exit(0);
                 break;
             default: // parent process
                 $now = microtime(true) * 1000;
@@ -53,8 +55,12 @@ class Start
     public function restore($callbackId)
     {
         $plug = \PMVC\plug(PLUGIN);
+        if (!empty($plug[MY_PARENT])) {
+            exit;
+        } 
         if (TYPE_DAEMON === $plug[CALLBACKS][$callbackId][TYPE]) {
             $this->__invoke($callbackId);
+            sleep(3);
         }
     }
 
