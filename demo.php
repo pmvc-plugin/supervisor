@@ -1,10 +1,27 @@
 <?php
 include("vendor/autoload.php");
+
 PMVC\Load::plug();
-PMVC\addPlugInFolder('../');
-$s = 'hello'."\n";
+PMVC\addPlugInFolders(['../']);
+
+/**
+ * Enable Debug mode
+ * composer require pmvc-plugin/error pmvc-plugin/debug_cli
+ */
+// \PMVC\initPlugin([ 'error'=>['all'], 'debug'=>['output'=>'debug_cli'] ]);
+
 $plug = PMVC\plug('supervisor');
-$plug->daemon(new fakeDaemon(), array($s, 0), 3);
+
+/**
+ * Run with many time
+ */
+$plug->daemon(new fakeCommand(), ['This is deamon', 0], 3);
+
+/**
+ * Run only once 
+ */
+$plug->script(new fakeCommand(), ['This is script', 0]);
+
 $plug->process(function() use($plug){
     static $i = 0;
     if ($i) {
@@ -13,12 +30,13 @@ $plug->process(function() use($plug){
         $i++;
     }
 });
-class fakeDaemon
+
+class fakeCommand
 {
     function __invoke($s, $exit)
     {
         $plug = PMVC\plug('supervisor');
-        echo $plug['pid'].'--'.$s;
-//        exit($exit);
+        echo $plug['pid'].'--'.$s."\n";
     }
 }
+
