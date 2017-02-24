@@ -37,6 +37,9 @@ class Monitor
             usleep(50000);
             pcntl_signal_dispatch();
         }
+        if (is_callable($plug['parentShutdown'])) {
+            $plug['parentShutdown']();
+        }
         trigger_error($plug->log('Monitor was exited'));
     }
 }
