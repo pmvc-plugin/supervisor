@@ -124,17 +124,6 @@ class supervisor extends \PMVC\PlugIn
         unset($this[CHILDREN][$pid]);
     }
 
-    /**
-     * Force Start Monitor When child not empty 
-     * http://stackoverflow.com/questions/230245/destruct-visibility-for-php
-     */
-    public function __destruct()
-    {
-        if (!empty($this[CHILDREN]) && $this[MONITOR]) {
-            $this->process();
-        }
-    }
-
     public function log($log)
     {
         $isParent = (empty($this['parent'])) ? 'Parent' : 'Child';

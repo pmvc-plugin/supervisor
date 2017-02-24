@@ -27,7 +27,7 @@ class Stop
     public function termOne($pid, $signal = SIGTERM)
     {
         if(isset($this->caller[CHILDREN][$pid])){
-            trigger_error($this->caller->log('Stopping child '.$pid));
+            trigger_error($this->caller->log('Process stopping child '.$pid));
             $result = posix_kill($pid, $signal);
             pcntl_signal_dispatch();
         }

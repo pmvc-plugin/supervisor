@@ -27,6 +27,9 @@ class Signal
         trigger_error($plug->log('Recieve '.$name[$signo]));
         if (!empty($plug['parent'])) {
             $plug['isStopMe'] = true;
+            if (is_callable($plug['shutdown'])) {
+                $plug['shutdown']($signo);
+            }
             return;
         }
         static $term_count = 0;

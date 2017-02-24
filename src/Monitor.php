@@ -15,7 +15,7 @@ class Monitor
             if(isset($plug[CHILDREN][$pid])){
                 $exitCode = pcntl_wexitstatus($status);
                 trigger_error($plug->log(
-                    'Child '. $pid. ' was stopped with exit code of'. $exitCode
+                    'Child '. $pid. ' was stopped with exit code of ['. $exitCode. ']'
                 ));
                 if( !$plug[IS_STOP_ALL] 
                     && 1 !== $exitCode 

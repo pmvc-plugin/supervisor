@@ -4,8 +4,16 @@
 [![License](https://poser.pugx.org/pmvc-plugin/supervisor/license)](https://packagist.org/packages/pmvc-plugin/supervisor)
 [![Total Downloads](https://poser.pugx.org/pmvc-plugin/supervisor/downloads)](https://packagist.org/packages/pmvc-plugin/supervisor) 
 
-supervisor
+Supervisor
 ===============
+
+## Daemon
+if run with Daemon mode and code not exit with 1,
+Supervisor will auto restore Daemon, this will not effect script mode
+
+
+
+
 
 ## Install with Composer
 ### 1. Download composer

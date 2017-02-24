@@ -34,6 +34,7 @@ class Start
                         $callBack[CALLBACK],
                         $callBack[ARGS]
                     );
+                    pcntl_signal_dispatch();
                 }
                 exit(0);
                 break;
@@ -62,7 +63,8 @@ class Start
             exit;
         } 
         if (TYPE_DAEMON === $plug[CALLBACKS][$callbackId][TYPE]) {
-            $this->__invoke($callbackId);
+            trigger_error($plug->log('Restore Deamon...'.$callbackId));
+            $this($callbackId);
             sleep(3);
         }
     }
