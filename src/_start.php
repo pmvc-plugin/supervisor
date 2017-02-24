@@ -1,11 +1,14 @@
 <?php
+
 namespace PMVC\PlugIn\supervisor;
+
 ${_INIT_CONFIG}[_CLASS] = __NAMESPACE__.'\Start';
+
 class Start
 {
     public function __invoke($callbackId)
     {
-        $plug = \PMVC\plug(PLUGIN);
+        $plug = $this->caller;
         $pid = pcntl_fork();
         switch ($pid) {
             case 0: //fork
@@ -13,7 +16,7 @@ class Start
                 $plug[PID] = posix_setsid();
                 $callBack = $plug[CALLBACKS][$callbackId];
                 if (TYPE_DAEMON === $callBack[TYPE]) { 
-                    $plug->log("Start as daemon");
+                    trigger_error($plug->log('Start as daemon'));
                     while (!$plug[IS_STOP_ME]) {
                         call_user_func_array(
                             $callBack[CALLBACK],
@@ -26,7 +29,7 @@ class Start
                         pcntl_signal_dispatch();
                     }
                 } else {
-                    $plug->log("Start as script");
+                    trigger_error($plug->log('Start as script'));
                     call_user_func_array(
                         $callBack[CALLBACK],
                         $callBack[ARGS]
@@ -37,7 +40,7 @@ class Start
             case -1: // for fail
                 $plug[MY_PARENT] = $plug[PID];
                 $plug[PID] = posix_setsid();
-                $plug->log("Failed to fork");
+                trigger_error($plug->log('Failed to fork'));
                 exit(0);
                 break;
             default: // parent process
@@ -47,7 +50,7 @@ class Start
                     PID => $pid,
                     START_TIME => $now
                 ));
-                $plug->log("Child forked with pid $pid");
+                trigger_error($plug->log('Child forked with pid '.$pid));
                 break;
         }
     }
@@ -67,7 +70,7 @@ class Start
     public function restart()
     {
         $plug = \PMVC\plug(PLUGIN);
-        $plug->log('Restarting children');
+        trigger_error($plug->log('Restarting children'));
         foreach($plug[CHILDREN] as $pid => $callbackId){
             if (TYPE_DAEMON !== $plug[CALLBACKS][$callbackId][TYPE]) {
                 continue;

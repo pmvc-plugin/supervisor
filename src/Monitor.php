@@ -5,7 +5,7 @@ class Monitor
     public function __construct(callable $callBack = null)
     {
         $plug = \PMVC\plug(PLUGIN);
-        $plug->log("Monitor starting.");
+        trigger_error($plug->log('Monitor starting.'));
         while( empty($plug[IS_STOP_ALL]) || count($plug[CHILDREN]) ){
             if (!empty($plug[MY_PARENT])) {
                 break;
@@ -14,9 +14,9 @@ class Monitor
             $pid = pcntl_wait($status, WNOHANG);
             if(isset($plug[CHILDREN][$pid])){
                 $exitCode = pcntl_wexitstatus($status);
-                $plug->log(
-                    "Child $pid was stopped with exit code of $exitCode"
-                );
+                trigger_error($plug->log(
+                    'Child '. $pid. ' was stopped with exit code of'. $exitCode
+                ));
                 if( !$plug[IS_STOP_ALL] 
                     && 1 !== $exitCode 
                 ){
@@ -37,6 +37,6 @@ class Monitor
             usleep(50000);
             pcntl_signal_dispatch();
         }
-        $plug->log("Monitor was exited.");
+        trigger_error($plug->log('Monitor was exited'));
     }
 }

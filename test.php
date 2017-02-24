@@ -1,6 +1,6 @@
 <?php
 PMVC\Load::plug();
-PMVC\addPlugInFolder('../');
+PMVC\addPlugInFolders(['../']);
 class SupervisorTest extends PHPUnit_Framework_TestCase
 {
     private $_plug = 'supervisor';
@@ -25,9 +25,9 @@ class SupervisorTest extends PHPUnit_Framework_TestCase
     {
         $plug = PMVC\plug($this->_plug);
         $s = 'hello1';
-        $plug->script(new fakeChild(), array($s, 0));
+        @$plug->script(new fakeChild(), array($s, 0));
         $self = $this;
-        $plug->process(function() use($plug, $self, $s){
+        @$plug->process(function() use($plug, $self, $s){
             $plug->stop();
             $self->assertEquals($s,$plug['callbacks'][0]['args'][0]);
         });
@@ -37,9 +37,9 @@ class SupervisorTest extends PHPUnit_Framework_TestCase
     {
         $s = 'hello2';
         $plug = PMVC\plug($this->_plug);
-        $plug->daemon(new fakeDaemon(), array($s, 1));
+        @$plug->daemon(new fakeDaemon(), array($s, 1));
         $self = $this;
-        $plug->process(function() use($plug, $self){
+        @$plug->process(function() use($plug, $self){
             $plug->stop();
             $self->assertEquals('daemon',$plug['callbacks'][0]['type']);
         });
@@ -50,10 +50,10 @@ class SupervisorTest extends PHPUnit_Framework_TestCase
         $plug = PMVC\plug($this->_plug);
         $s = 'hello';
         $self = $this;
-        $childKey = $plug->script(new fakeChild(), array($s.'3', 3));
-        $second = $plug->script(new fakeChild(), array($s.'4', 4), $childKey);
-        $third = $plug->script(new fakeChild(), array($s.'5', 5), $second);
-        $plug->process(function() use($plug, $self, $second){
+        @$childKey = $plug->script(new fakeChild(), array($s.'3', 3));
+        @$second = $plug->script(new fakeChild(), array($s.'4', 4), $childKey);
+        @$third = $plug->script(new fakeChild(), array($s.'5', 5), $second);
+        @$plug->process(function() use($plug, $self, $second){
             static $i = 0;
             if (!$i) {
                 $self->assertTrue(empty($plug['callbacks'][$second]['startTime']));

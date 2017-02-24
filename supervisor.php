@@ -116,7 +116,7 @@ class supervisor extends \PMVC\PlugIn
         $key = $this[CHILDREN][$pid];
         if (isset($this[QUEUE][$key])) {
             foreach ($this[QUEUE][$key] as $next) {
-                $this->log('Start queue: '.$next);
+                trigger_error($this->log('Start queue: '.$next));
                 $this->start($next);
             }
             unset($this[QUEUE][$key]);
@@ -140,7 +140,8 @@ class supervisor extends \PMVC\PlugIn
         $isParent = (empty($this['parent'])) ? 'Parent' : 'Child';
         $isParent.=' '.$this['pid'];
         list($sec, $ms) = explode('.', number_format(microtime(true), 3));
-        echo $isParent.'-'.$this[LOG_NUM].' ['.date('Y-m-d H:i:s').'.'.$ms.'] '.$log."\n";
+        $message = $isParent.'-'.$this[LOG_NUM].' ['.date('Y-m-d H:i:s').'.'.$ms.'] '.$log;
         $this[LOG_NUM]++;
+        return $message;
     }
 }
