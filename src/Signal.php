@@ -44,7 +44,7 @@ class Signal
                 if ($term_count < 5) {
                     $plug->stop($signo);
                 } else {
-                    $plug->stop(SIGKILL);
+                    $plug->forceStop();
                 }
                 break;
             case SIGHUP:
