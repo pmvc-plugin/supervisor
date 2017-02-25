@@ -47,10 +47,10 @@ class Start
             default: // parent process
                 $now = microtime(true) * 1000;
                 $plug->pid($pid, $callbackId);
-                $plug->updateCall($callbackId, array(
+                $plug->updateCallback($callbackId, [ 
                     PID => $pid,
                     START_TIME => $now
-                ));
+                ]);
                 trigger_error($plug->log('Child forked with pid '.$pid));
                 break;
         }

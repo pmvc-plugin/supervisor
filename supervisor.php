@@ -101,7 +101,7 @@ class supervisor extends \PMVC\PlugIn
         return $this->num++;
     }
 
-    public function updateCall($callbackId, $arr)
+    public function updateCallback($callbackId, $arr)
     {
         $this[CALLBACKS][$callbackId] = $arr + $this[CALLBACKS][$callbackId];
     }
