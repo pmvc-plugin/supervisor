@@ -4,7 +4,7 @@ class Signal
 {
     public function __construct()
     {
-        $arr = [SIGTERM, SIGINT, SIGHUP];
+        $arr = [SIGHUP, SIGINT, SIGTERM];
         foreach ($arr as $sign) {
             pcntl_signal($sign, $this);
         }
@@ -20,19 +20,22 @@ class Signal
     {
         $plug = \PMVC\plug('supervisor');
         $name = [ 
+            SIGHUP  => 'SIGHUP',
             SIGINT  => 'SIGINT',
             SIGTERM => 'SIGTERM',
-            SIGHUP  => 'SIGHUP'
         ];
         trigger_error($plug->log('Recieve '.$name[$signo]));
-        if (!empty($plug['parent'])) {
-            $plug['isStopMe'] = true;
-            if (is_callable($plug['shutdown'])) {
-                $plug['shutdown']($signo);
-            }
-            return;
+        if (empty($plug[MY_PARENT])) {
+            return $this->_handleParent($signo);
+        } else {
+            return $this->_handleChild($signo);
         }
+    }
+
+    private function _handleParent($signo)
+    {
         static $term_count = 0;
+        $plug = \PMVC\plug('supervisor');
         switch ($signo) {
             case SIGINT:
             case SIGTERM:
@@ -47,6 +50,15 @@ class Signal
             case SIGHUP:
                 $plug['start']->restart();
                 break;
+        }
+    }
+
+    private function _handleChild($signo)
+    {
+        $plug = \PMVC\plug('supervisor');
+        $plug[IS_STOP_ME] = true;
+        if (is_callable($plug[CHILD_SHUTDOWN])) {
+            $plug[CHILD_SHUTDOWN]($signo);
         }
     }
 }

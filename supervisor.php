@@ -12,18 +12,24 @@ const IS_STOP_ALL = 'isStopAll';
 const IS_STOP_ME = 'isStopMe';
 const PID = 'pid';
 const START_TIME = 'startTime';
-const MONITOR = 'monitor';
 const LOG_NUM = 'log';
+
+// parent and child
+const TYPE = 'type';
+const TYPE_SCRIPT = 'script';
+const TYPE_DAEMON = 'daemon';
+
 // child
 const CALLBACK = 'callback'; 
 const QUEUE = 'queue'; 
 const ARGS = 'args';
-const TYPE = 'type';
-const TYPE_SCRIPT = 'script';
-const TYPE_DAEMON = 'daemon';
 const DELAY = 'delay';
 const DELAY_FUNCTION = 'delayFunction';
 const PLUGIN = 'supervisor';
+
+// shutdown
+const CHILD_SHUTDOWN = 'childShutdown';
+const PARENT_SHUTDOWN = 'parentShutdown';
 
 class supervisor extends \PMVC\PlugIn
 {
@@ -35,11 +41,14 @@ class supervisor extends \PMVC\PlugIn
         $this[MY_PARENT] = null;
         $this[IS_STOP_ALL] = false;
         $this[IS_STOP_ME] = false;
-        $this[MONITOR] = true;
         $this[PID] = posix_getpid();
         $this[LOG_NUM] = 0;
         $this->num = 0;
-        new Signal();
+    }
+
+    public function init()
+    {
+        new Signal(); // call it in init to avoid infinity
     }
 
     public function process(callable $callBack = null)
