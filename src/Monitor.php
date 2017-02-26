@@ -7,11 +7,9 @@ class Monitor
         $plug = \PMVC\plug(PLUGIN);
         trigger_error($plug->log('Monitor starting.'));
         while( empty($plug[IS_STOP_ALL]) || count($plug[CHILDREN]) ){
-            if (!empty($plug[MY_PARENT])) {
-                break;
-            }
+            pcntl_signal_dispatch();
+            $pid = pcntl_waitpid(-1, $status, WNOHANG);
             // Check for exited children
-            $pid = pcntl_wait($status, WNOHANG | WUNTRACED);
             $callbackId = false;
             if(isset($plug[CHILDREN][$pid])){
                 $callbackId = $plug[CHILDREN][$pid];
@@ -26,8 +24,7 @@ class Monitor
                 }
                 $plug->cleanPid($pid);
             }
-            pcntl_signal_dispatch();
-            if (empty($plug[CHILDREN])) {
+            if (!count($plug[CHILDREN])) {
                 $plug[IS_STOP_ALL] = true;
                 break;
             }
@@ -36,7 +33,6 @@ class Monitor
             }
             // php will eat up your cpu if you don't have this
             usleep(50000);
-            pcntl_signal_dispatch();
         }
         if (is_callable($plug[PARENT_SHUTDOWN])) {
             $plug[PARENT_SHUTDOWN]();

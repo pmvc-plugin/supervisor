@@ -35,11 +35,10 @@ class SupervisorTest extends PHPUnit_Framework_TestCase
     {
         $s = 'helloDaemon';
         $plug = PMVC\plug($this->_plug);
-        @$plug->daemon(new fakeDaemon(), array($s, 1));
-        $self = $this;
-        @$plug->process(function() use($plug, $self){
-            $plug->stop();
-            $self->assertEquals('daemon',$plug['callbacks'][0]['type']);
+        @$plug->daemon(new fakeDaemon(), [$s, 1]);
+        @$plug->process(function() use ($plug) {
+            $plug->forceStop();
+            $this->assertEquals('daemon',$plug['callbacks'][0]['type']);
         });
     }
 

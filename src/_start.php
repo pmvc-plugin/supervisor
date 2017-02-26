@@ -17,6 +17,7 @@ class Start
                 $plug[MY_PARENT] = $plug[PID];
                 $plug[PID] = posix_setsid();
                 $callBack = $plug[CALLBACKS][$callbackId];
+                pcntl_signal_dispatch();
                 if (TYPE_DAEMON === $callBack[TYPE]) { 
                     trigger_error($plug->log('Start as daemon'));
                     while (!$plug[IS_STOP_ME]) {
@@ -30,6 +31,7 @@ class Start
                         );
                         pcntl_signal_dispatch();
                     }
+                    exit(1);
                 } else {
                     trigger_error($plug->log('Start as script'));
                     call_user_func_array(
@@ -37,14 +39,12 @@ class Start
                         $callBack[ARGS]
                     );
                     pcntl_signal_dispatch();
+                    exit(1);
                 }
-                exit(0);
-                break;
             case -1: // for fail
-                return new UnexpectedValueException(
+                throw new UnexpectedValueException(
                     $plug->log('Fork fail.')
                 );
-                break;
             default: // parent process
                 $now = microtime(true) * 1000;
                 $plug->pid($pid, $callbackId);
@@ -52,8 +52,7 @@ class Start
                     PID => $pid,
                     START_TIME => $now
                 ]);
-                trigger_error($plug->log('Child forked with pid '.$pid));
-                break;
+                return trigger_error($plug->log('Child forked with pid '.$pid));
         }
     }
 
