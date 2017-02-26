@@ -11,7 +11,7 @@ class Monitor
                 break;
             }
             // Check for exited children
-            $pid = pcntl_wait($status, WNOHANG);
+            $pid = pcntl_wait($status, WNOHANG | WUNTRACED);
             $callbackId = false;
             if(isset($plug[CHILDREN][$pid])){
                 $callbackId = $plug[CHILDREN][$pid];
