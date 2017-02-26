@@ -2,6 +2,8 @@
 
 namespace PMVC\PlugIn\supervisor;
 
+use UnexpectedValueException;
+
 ${_INIT_CONFIG}[_CLASS] = __NAMESPACE__.'\Start';
 
 class Start
@@ -39,10 +41,9 @@ class Start
                 exit(0);
                 break;
             case -1: // for fail
-                $plug[MY_PARENT] = $plug[PID];
-                $plug[PID] = posix_setsid();
-                trigger_error($plug->log('Failed to fork'));
-                exit(0);
+                return new UnexpectedValueException(
+                    $plug->log('Fork fail.')
+                );
                 break;
             default: // parent process
                 $now = microtime(true) * 1000;

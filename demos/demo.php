@@ -1,8 +1,8 @@
 <?php
-include("vendor/autoload.php");
+include("../vendor/autoload.php");
 
 PMVC\Load::plug();
-PMVC\addPlugInFolders(['../']);
+PMVC\addPlugInFolders(['../../']);
 
 /**
  * Enable Debug mode

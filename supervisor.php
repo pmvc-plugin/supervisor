@@ -1,7 +1,13 @@
 <?php
+
 namespace PMVC\PlugIn\supervisor;
-use SplFixedArray;
+
+use BadMethodCallException;
+use UnexpectedValueException;
+use LogicException;
+
 ${_INIT_CONFIG}[_CLASS] = __NAMESPACE__.'\supervisor';
+
 \PMVC\l(__DIR__.'/src/Signal.php');
 
 // storage
@@ -11,6 +17,7 @@ const MY_PARENT = 'parent';
 const IS_STOP_ALL = 'isStopAll';
 const IS_STOP_ME = 'isStopMe';
 const PID = 'pid';
+const PID_FIlE = 'pidFile';
 const START_TIME = 'startTime';
 const LOG_NUM = 'log';
 
@@ -21,6 +28,7 @@ const TYPE_DAEMON = 'daemon';
 
 // child
 const CALLBACK = 'callback'; 
+const TRIGGER = 'trigger'; 
 const QUEUE = 'queue'; 
 const ARGS = 'args';
 const DELAY = 'delay';
@@ -33,17 +41,17 @@ const PARENT_SHUTDOWN = 'parentShutdown';
 
 class supervisor extends \PMVC\PlugIn
 {
-    private $num;
+    private $num = 0;
     public function __construct()
     {
-        $this[CALLBACKS] = new SplFixedArray(1);
-        $this[CHILDREN] = array();
+        $this[CALLBACKS] = [];
+        $this[CHILDREN] = [];
+        $this[QUEUE] = [];
         $this[MY_PARENT] = null;
         $this[IS_STOP_ALL] = false;
         $this[IS_STOP_ME] = false;
-        $this[PID] = posix_getpid();
+        $this[PID] = getmypid();
         $this[LOG_NUM] = 0;
-        $this->num = 0;
     }
 
     public function init()
@@ -51,11 +59,51 @@ class supervisor extends \PMVC\PlugIn
         new Signal(); // call it in init to avoid infinity
     }
 
-    public function process(callable $callBack = null)
+    private function _runParentAsDaemon()
+    {
+        if (empty($this[PID_FIlE])) {
+            return new BadMethodCallException(
+                'PID file is not defined'
+            );
+        }
+        $pid = pcntl_fork();
+        switch ($pid) {
+            case 0:
+                $this[PID] = getmypid();
+                $this->_createPidFile();
+                break;
+            case -1: // for fail
+                return new UnexpectedValueException(
+                    $this->log('Fork fail.')
+                );
+                break;
+            default:
+                if (is_callable($this[PARENT_SHUTDOWN])) {
+                    $this[PARENT_SHUTDOWN]();
+                }
+                exit(0);
+        }
+    }
+
+    public function process(callable $monitorCallBack = null)
     {
         if (empty($this[MY_PARENT])) {
+            if (TYPE_DAEMON === $this[TYPE]) {
+                $this->_runParentAsDaemon();
+            }
             \PMVC\l(__DIR__.'/src/Monitor.php');
-            new Monitor($callBack); 
+            foreach ($this[CALLBACKS] as $callbackId=>$callback) {
+                $trigger = \PMVC\get($callback, TRIGGER); 
+                if (strlen($trigger)) {
+                    if (!isset($this[QUEUE][$trigger])) {
+                        $this[QUEUE][$trigger] = [];
+                    }
+                    $this[QUEUE][$trigger][] = $callbackId; 
+                } else {
+                    $this->start($callbackId);
+                }
+            }
+            new Monitor($monitorCallBack);
         }
     }
 
@@ -65,12 +113,13 @@ class supervisor extends \PMVC\PlugIn
         $trigger = null
     )
     {
-        $this[CALLBACKS][$this->num] = array(
+        $this[CALLBACKS][] = [ 
             CALLBACK => $callback,
-            ARGS => $args,
-            TYPE => TYPE_SCRIPT 
-        );
-        return $this->_increase($trigger);
+            ARGS     => $args,
+            TYPE     => TYPE_SCRIPT,
+            TRIGGER  => $trigger
+        ];
+        return count($this[CALLBACKS]) - 1;
     }
 
     public function daemon ( 
@@ -80,14 +129,14 @@ class supervisor extends \PMVC\PlugIn
         $delayFunction = 'sleep'
     )
     {
-        $this[CALLBACKS][$this->num] = array(
+        $this[CALLBACKS][] = [ 
             CALLBACK => $callback,
             ARGS => $args,
             TYPE => TYPE_DAEMON,
             DELAY => $delay,
             DELAY_FUNCTION => $delayFunction
-        );
-        return $this->_increase();
+        ];
+        return count($this[CALLBACKS]) - 1;
     }
 
     public function forceStop()
@@ -95,20 +144,53 @@ class supervisor extends \PMVC\PlugIn
         $this->stop(SIGKILL);
     }
 
-    private function _increase($trigger=null)
+    private function _createPidFile()
     {
-        if (is_null($trigger) || empty($this[CALLBACKS][$trigger])) {
-            $this->start($this->num);
-        } else {
-            if (!isset($this[QUEUE][$trigger])) {
-                $this[QUEUE][$trigger] = array();
-            }
-            $this[QUEUE][$trigger][] = $this->num; 
+        $file = \PMVC\realpath($this[PID_FIlE]);
+        if ($file) {
+            throw new LogicException(
+                'PID file already exists, can\'t create. ['.$file.']'
+            );
         }
-        $size = $this->num + 2;
-        $this[CALLBACKS]->setSize($size);
-        return $this->num++;
+        file_put_contents($this[PID_FIlE], $this[PID]);
     }
+
+    public function kill($signo=SIGTERM)
+    {
+        if (empty($this[PID_FIlE])) {
+            throw new BadMethodCallException(
+                'PID file is not defined'
+            );
+        }
+        if (!\PMVC\realpath($this[PID_FIlE])) {
+            throw new BadMethodCallException(
+                'PID file is not found. ['.$this[PID_FIlE].']'
+            );
+        }
+        $pid = trim(file_get_contents($this[PID_FIlE]));
+        if ((int)$pid === $this[PID]) {
+            throw new LogicException(
+                'Can\'t use kill function kill self.'
+            );
+        }
+        if ($pid) {
+            $result = posix_kill($pid, $signo);
+            if ($result) {
+                trigger_error($this->log('delete pid file'));
+                unlink($this[PID_FIlE]);
+                exit();
+            } else {
+                throw new LogicException(
+                    'Kill process failed'
+                );
+            }
+        } else {
+            throw new LogicException(
+                'Get PId failed'
+            );
+        }
+    }
+
 
     public function updateCallback($callbackId, $arr)
     {

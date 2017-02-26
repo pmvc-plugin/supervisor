@@ -37,8 +37,12 @@ class Signal
         static $term_count = 0;
         $plug = \PMVC\plug('supervisor');
         switch ($signo) {
+            case SIGHUP:
+                $plug['start']->restart();
+                break;
             case SIGINT:
             case SIGTERM:
+            default:
                 trigger_error($plug->log('Ask start to shutting down...'));
                 $term_count++;
                 if ($term_count < 5) {
@@ -46,9 +50,6 @@ class Signal
                 } else {
                     $plug->forceStop();
                 }
-                break;
-            case SIGHUP:
-                $plug['start']->restart();
                 break;
         }
     }

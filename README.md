@@ -12,7 +12,7 @@ if run with Daemon mode and code not exit with 1,
 Supervisor will auto restore Daemon, this will not effect script mode
 
 ## How to use?
-https://github.com/pmvc-plugin/supervisor/blob/master/demo.php
+https://github.com/pmvc-plugin/supervisor/blob/master/demos/demo.php
 
 
 

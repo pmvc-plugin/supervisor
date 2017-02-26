@@ -7,9 +7,7 @@ class SupervisorTest extends PHPUnit_Framework_TestCase
 
     function tearDown()
     {
-        if (\PMVC\exists($this->_plug,'plugin')) {
-            \PMVC\unplug($this->_plug);
-        }
+        \PMVC\unplug($this->_plug);
     }
 
     function testPlugin()
@@ -24,7 +22,7 @@ class SupervisorTest extends PHPUnit_Framework_TestCase
     function testScript()
     {
         $plug = PMVC\plug($this->_plug);
-        $s = 'hello1';
+        $s = 'helloScript';
         @$plug->script(new fakeChild(), array($s, 0));
         $self = $this;
         @$plug->process(function() use($plug, $self, $s){
@@ -35,7 +33,7 @@ class SupervisorTest extends PHPUnit_Framework_TestCase
 
     function testDaemon()
     {
-        $s = 'hello2';
+        $s = 'helloDaemon';
         $plug = PMVC\plug($this->_plug);
         @$plug->daemon(new fakeDaemon(), array($s, 1));
         $self = $this;
@@ -48,17 +46,17 @@ class SupervisorTest extends PHPUnit_Framework_TestCase
     function testTrigger()
     {
         $plug = PMVC\plug($this->_plug);
-        $s = 'hello';
+        $s = 'helloTrigger';
         $self = $this;
         @$childKey = $plug->script(new fakeChild(), array($s.'3', 3));
         @$second = $plug->script(new fakeChild(), array($s.'4', 4), $childKey);
         @$third = $plug->script(new fakeChild(), array($s.'5', 5), $second);
-        @$plug->process(function() use($plug, $self, $second){
+        @$plug->process(function($callbackId, $pid) use($plug, $self, $second){
             static $i = 0;
             if (!$i) {
-                $self->assertTrue(empty($plug['callbacks'][$second]['startTime']));
+                $self->assertTrue(empty($plug['callbacks'][$second]['startTime']), 'Test first');
             } else {
-                $self->assertFalse(empty($plug['callbacks'][$second]['startTime']));
+                $self->assertFalse(empty($plug['callbacks'][$second]['startTime']), 'Test second');
             }
             $i++;
         });
@@ -74,11 +72,13 @@ class fakeChild
     }
 }
 
+/**
+ * fakeDaemon without exit
+ */
 class fakeDaemon
 {
     function __invoke($s, $exit)
     {
-        echo "Daemon \n";
         echo $s."\n";
     }
 }

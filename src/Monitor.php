@@ -12,7 +12,9 @@ class Monitor
             }
             // Check for exited children
             $pid = pcntl_wait($status, WNOHANG);
+            $callbackId = false;
             if(isset($plug[CHILDREN][$pid])){
+                $callbackId = $plug[CHILDREN][$pid];
                 $exitCode = pcntl_wexitstatus($status);
                 trigger_error($plug->log(
                     'Child '. $pid. ' was stopped with exit code of ['. $exitCode. ']'
@@ -20,7 +22,6 @@ class Monitor
                 if( !$plug[IS_STOP_ALL] 
                     && 1 !== $exitCode 
                 ){
-                    $callbackId = $plug[CHILDREN][$pid];
                     $plug['start']->restore($callbackId);
                 }
                 $plug->cleanPid($pid);
@@ -31,7 +32,7 @@ class Monitor
                 break;
             }
             if ($callBack && empty($plug[IS_STOP_ALL])) {
-                call_user_func($callBack);
+                $callBack($callbackId, $pid);
             }
             // php will eat up your cpu if you don't have this
             usleep(50000);
