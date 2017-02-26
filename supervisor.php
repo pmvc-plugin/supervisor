@@ -38,10 +38,10 @@ const PLUGIN = 'supervisor';
 // shutdown
 const CHILD_SHUTDOWN = 'childShutdown';
 const PARENT_SHUTDOWN = 'parentShutdown';
+const PARENT_INTO_DAEMON_SHUTDOWN = 'parentIntoDaemonShutdown';
 
 class supervisor extends \PMVC\PlugIn
 {
-    private $num = 0;
     public function __construct()
     {
         $this[CALLBACKS] = [];
@@ -78,8 +78,8 @@ class supervisor extends \PMVC\PlugIn
                 );
                 break;
             default:
-                if (is_callable($this[PARENT_SHUTDOWN])) {
-                    $this[PARENT_SHUTDOWN]();
+                if (is_callable($this[PARENT_INTO_DAEMON_SHUTDOWN])) {
+                    $this[PARENT_INTO_DAEMON_SHUTDOWN]();
                 }
                 exit(0);
         }
@@ -157,17 +157,13 @@ class supervisor extends \PMVC\PlugIn
 
     public function kill($signo=SIGTERM)
     {
-        if (empty($this[PID_FIlE])) {
+        $file = \PMVC\realpath($this[PID_FIlE]);
+        if (!$file) {
             throw new BadMethodCallException(
-                'PID file is not defined'
+                'PID file is not found. ['.$file.'], Supervisor is not running.'
             );
         }
-        if (!\PMVC\realpath($this[PID_FIlE])) {
-            throw new BadMethodCallException(
-                'PID file is not found. ['.$this[PID_FIlE].']'
-            );
-        }
-        $pid = trim(file_get_contents($this[PID_FIlE]));
+        $pid = trim(file_get_contents($file));
         if ((int)$pid === $this[PID]) {
             throw new LogicException(
                 'Can\'t use kill function kill self.'
@@ -176,9 +172,8 @@ class supervisor extends \PMVC\PlugIn
         if ($pid) {
             $result = posix_kill($pid, $signo);
             if ($result) {
-                trigger_error($this->log('delete pid file'));
-                unlink($this[PID_FIlE]);
-                exit();
+                trigger_error($this->log('Delete pid file'));
+                unlink($file);
             } else {
                 throw new LogicException(
                     'Kill process failed'
