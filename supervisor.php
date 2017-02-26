@@ -109,7 +109,7 @@ class supervisor extends \PMVC\PlugIn
 
     public function script (
         callable $callback, 
-        array $args = array(),
+        array $args = [],
         $trigger = null
     )
     {
@@ -124,7 +124,7 @@ class supervisor extends \PMVC\PlugIn
 
     public function daemon ( 
         callable $callback, 
-        array $args = array(),
+        array $args = [],
         $delay = 1,
         $delayFunction = 'sleep'
     )
