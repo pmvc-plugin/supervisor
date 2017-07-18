@@ -172,7 +172,9 @@ class supervisor extends \PMVC\PlugIn
         if ($pid) {
             $result = posix_kill($pid, $signo);
             if ($result) {
-                trigger_error($this->log('Delete pid file'));
+                \PMVC\dev(function() use ($file) {
+                    return $this->log('Delete pid file. ['.$file.']');
+                }, 'debug');
                 unlink($file);
             } else {
                 throw new LogicException(
@@ -202,7 +204,9 @@ class supervisor extends \PMVC\PlugIn
         $key = $this[CHILDREN][$pid];
         if (isset($this[QUEUE][$key])) {
             foreach ($this[QUEUE][$key] as $next) {
-                trigger_error($this->log('Start queue: '.$next));
+                \PMVC\dev(function() use ($next) {
+                    return $this->log('Start queue: '.$next);
+                }, 'debug');
                 $this->start($next);
             }
             unset($this[QUEUE][$key]);

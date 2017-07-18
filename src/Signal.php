@@ -19,12 +19,14 @@ class Signal
     public function __invoke($signo)
     {
         $plug = \PMVC\plug('supervisor');
-        $name = [ 
-            SIGHUP  => 'SIGHUP',
-            SIGINT  => 'SIGINT',
-            SIGTERM => 'SIGTERM',
-        ];
-        trigger_error($plug->log('Recieve '.$name[$signo]));
+        \PMVC\dev(function() use ($plug, $signo){
+            $name = [ 
+                SIGHUP  => 'SIGHUP',
+                SIGINT  => 'SIGINT',
+                SIGTERM => 'SIGTERM',
+            ];
+            return $plug->log('Recieve '.$name[$signo]);
+        }, 'debug');
         if (empty($plug[MY_PARENT])) {
             return $this->_handleParent($signo);
         } else {
@@ -43,7 +45,9 @@ class Signal
             case SIGINT:
             case SIGTERM:
             default:
-                trigger_error($plug->log('Ask start to shutting down...'));
+                \PMVC\dev(function() use ($plug) {
+                    return $plug->log('Ask start to shutting down...');
+                }, 'debug');
                 $term_count++;
                 if ($term_count < 5) {
                     $plug->stop($signo);

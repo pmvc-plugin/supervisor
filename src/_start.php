@@ -19,7 +19,9 @@ class Start
                 $callBack = $plug[CALLBACKS][$callbackId];
                 pcntl_signal_dispatch();
                 if (TYPE_DAEMON === $callBack[TYPE]) { 
-                    trigger_error($plug->log('Start as daemon'));
+                    \PMVC\dev(function() use ($plug) {
+                        return $plug->log('Start as daemon');
+                    }, 'debug');
                     while (!$plug[IS_STOP_ME]) {
                         call_user_func_array(
                             $callBack[CALLBACK],
@@ -33,7 +35,9 @@ class Start
                     }
                     exit(1);
                 } else {
-                    trigger_error($plug->log('Start as script'));
+                    \PMVC\dev(function() use ($plug) {
+                        return $plug->log('Start as script');
+                    }, 'debug');
                     call_user_func_array(
                         $callBack[CALLBACK],
                         $callBack[ARGS]
@@ -52,7 +56,10 @@ class Start
                     PID => $pid,
                     START_TIME => $now
                 ]);
-                return trigger_error($plug->log('Child forked with pid '.$pid));
+                \PMVC\dev(function() use ($plug, $pid) {
+                    return $plug->log('Child forked with pid '.$pid);
+                }, 'debug');
+                return;
         }
     }
 
@@ -63,7 +70,9 @@ class Start
             exit;
         } 
         if (TYPE_DAEMON === $plug[CALLBACKS][$callbackId][TYPE]) {
-            trigger_error($plug->log('Restore Deamon...'.$callbackId));
+            \PMVC\dev(function() use ($plug, $callbackId) {
+                return $plug->log('Restore Deamon...'.$callbackId);
+            }, 'debug');
             $this($callbackId);
             sleep(3);
         }
@@ -72,7 +81,9 @@ class Start
     public function restart()
     {
         $plug = \PMVC\plug(PLUGIN);
-        trigger_error($plug->log('Restarting children'));
+        \PMVC\dev(function() use ($plug) {
+            return $plug->log('Restarting children');
+        }, 'debug');
         foreach($plug[CHILDREN] as $pid => $callbackId){
             if (TYPE_DAEMON !== $plug[CALLBACKS][$callbackId][TYPE]) {
                 continue;

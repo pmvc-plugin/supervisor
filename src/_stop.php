@@ -7,12 +7,16 @@ class Stop
     {
         if (SIGKILL===$signal) {
             $this->caller[IS_STOP_ALL] = true;
-            trigger_error($this->caller->log('Ask force stopping children'));
+            \PMVC\dev(function(){
+                return $this->caller->log('Ask force stopping children');
+            },'debug');
             $this->termAll($signal);
         }
         if(empty($this->caller[IS_STOP_ALL])){
             $this->caller[IS_STOP_ALL] = true;
-            trigger_error($this->caller->log('Ask stopping children'));
+            \PMVC\dev(function(){
+                return $this->caller->log('Ask stopping children');
+            },'debug');
             $this->termAll($signal);
         }
     }
@@ -27,7 +31,9 @@ class Stop
     public function termOne($pid, $signal = SIGTERM)
     {
         if(isset($this->caller[CHILDREN][$pid])){
-            trigger_error($this->caller->log('Process stopping child '.$pid));
+            \PMVC\dev(function() use ($pid){
+                return $this->caller->log('Process stopping child '.$pid);
+            },'debug');
             $result = posix_kill($pid, $signal);
             pcntl_signal_dispatch();
         }

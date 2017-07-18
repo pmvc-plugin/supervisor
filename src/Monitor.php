@@ -5,7 +5,9 @@ class Monitor
     public function __construct(callable $callBack = null)
     {
         $plug = \PMVC\plug(PLUGIN);
-        trigger_error($plug->log('Monitor starting.'));
+        \PMVC\dev(function() use ($plug) {
+            return $plug->log('Monitor starting.');
+        }, 'debug');
         while( empty($plug[IS_STOP_ALL]) || count($plug[CHILDREN]) ){
             pcntl_signal_dispatch();
             $pid = pcntl_waitpid(-1, $status, WNOHANG);
@@ -14,9 +16,11 @@ class Monitor
             if(isset($plug[CHILDREN][$pid])){
                 $callbackId = $plug[CHILDREN][$pid];
                 $exitCode = pcntl_wexitstatus($status);
-                trigger_error($plug->log(
-                    'Child '. $pid. ' was stopped with exit code of ['. $exitCode. ']'
-                ));
+                \PMVC\dev(function() use ($plug, $pid, $exitCode) {
+                    return $plug->log(
+                        'Child '. $pid. ' was stopped with exit code of ['. $exitCode. ']'
+                    );
+                }, 'debug');
                 if( !$plug[IS_STOP_ALL] 
                     && 1 !== $exitCode 
                 ){
@@ -37,6 +41,8 @@ class Monitor
         if (is_callable($plug[PARENT_SHUTDOWN])) {
             $plug[PARENT_SHUTDOWN]();
         }
-        trigger_error($plug->log('Monitor was exited'));
+        \PMVC\dev(function() use ($plug) {
+            return $plug->log('Monitor was exited.');
+        }, 'debug');
     }
 }
