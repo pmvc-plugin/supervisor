@@ -164,22 +164,13 @@ class supervisor extends \PMVC\PlugIn
             );
         }
         $pid = trim(file_get_contents($file));
-        if ((int)$pid === $this[PID]) {
-            throw new LogicException(
-                'Can\'t use kill function kill self.'
-            );
-        }
         if ($pid) {
-            $result = posix_kill($pid, $signo);
+            $result = $this->killPid($pid, $signo); 
             if ($result) {
                 \PMVC\dev(function() use ($file) {
                     return $this->log('Delete pid file. ['.$file.']');
                 }, 'debug');
                 unlink($file);
-            } else {
-                throw new LogicException(
-                    'Kill process failed'
-                );
             }
         } else {
             throw new LogicException(
@@ -188,6 +179,22 @@ class supervisor extends \PMVC\PlugIn
         }
     }
 
+    public function killPid($pid, $signo=SIGTERM)
+    {
+        if ((int)$pid === $this[PID]) {
+            throw new LogicException(
+                'Can\'t use kill or killPid function kill self.'
+            );
+        }
+        $result = posix_kill($pid, $signo);
+        if ($result) {
+            return $result;
+        } else {
+            throw new LogicException(
+                'Kill process failed'
+            );
+        }
+    }
 
     public function updateCallback($callbackId, $arr)
     {
