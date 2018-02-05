@@ -78,12 +78,11 @@ class supervisor extends \PMVC\PlugIn
                 );
                 break;
             default:
-                if (is_callable($this[PARENT_INTO_DAEMON_SHUTDOWN])) {
-                    $this[PARENT_INTO_DAEMON_SHUTDOWN]();
-                }
+                $this->shutdown();
                 exit(0);
         }
     }
+
 
     public function process(callable $monitorCallBack = null)
     {
@@ -91,6 +90,7 @@ class supervisor extends \PMVC\PlugIn
             if (TYPE_DAEMON === $this[TYPE]) {
                 $this->_runParentAsDaemon();
             } else {
+                unset($this[PARENT_INTO_DAEMON_SHUTDOWN]);
                 if (!empty($this[PID_FILE])) {
                     $this->_createPidFile();
                 }
@@ -159,6 +159,23 @@ class supervisor extends \PMVC\PlugIn
         file_put_contents($this[PID_FILE], $this[PID]);
     }
 
+    public function shutdown()
+    {
+        if (is_callable($plug[PARENT_SHUTDOWN])) {
+            $plug[PARENT_SHUTDOWN]();
+        }
+        if (is_callable($this[PARENT_INTO_DAEMON_SHUTDOWN])) {
+            $this[PARENT_INTO_DAEMON_SHUTDOWN]();
+        }
+        $file = \PMVC\realpath($this[PID_FILE]);
+        if ($file) {
+            \PMVC\dev(function() use ($file) {
+                return $this->log('Delete pid file. ['.$file.']');
+            }, 'debug');
+            unlink($file);
+        }
+    }
+
     public function kill($signo=SIGTERM)
     {
         $file = \PMVC\realpath($this[PID_FILE]);
@@ -171,10 +188,7 @@ class supervisor extends \PMVC\PlugIn
         if ($pid) {
             $result = $this->killPid($pid, $signo); 
             if ($result) {
-                \PMVC\dev(function() use ($file) {
-                    return $this->log('Delete pid file. ['.$file.']');
-                }, 'debug');
-                unlink($file);
+                $this->shutdown();
             }
         } else {
             throw new LogicException(

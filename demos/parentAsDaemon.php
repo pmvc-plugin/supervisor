@@ -1,11 +1,12 @@
 <?php
-include("../vendor/autoload.php");
+include("./vendor/autoload.php");
 
 use PMVC\PlugIn\supervisor as sv;
 
-PMVC\Load::plug();
-PMVC\addPlugInFolders(['../../']);
-PMVC\initPlugIn(['supervisor'=>null],true); // for load constant
+\PMVC\Load::plug();
+//\PMVC\addPlugInFolders(['../../']);
+\PMVC\initPlugIn(['supervisor'=>null],true); // for load constant
+var_dump(\PMVC\folders(_PLUGIN));
 
 /**
  * Enable Debug mode

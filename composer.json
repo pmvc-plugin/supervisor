@@ -12,6 +12,9 @@
     ],
     "require": {
         "pmvc/pmvc": "*",
+        "pmvc-plug/cli": "*",
+        "pmvc-plug/debug_cli": "*",
+        "pmvc-plug/error": "*",
         "ext-pcntl": "*"
     },
     "minimum-stability": "dev"
