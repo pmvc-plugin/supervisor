@@ -18,7 +18,8 @@
         "pmvc-plugin/cli": "*",
         "pmvc-plugin/debug_cli": "*",
         "pmvc-plugin/error": "*",
-        "pmvc-plugin/dev": "*"
+        "pmvc-plugin/dev": "*",
+        "pmvc-plugin/dispatcher": "*"
     },
     "minimum-stability": "dev"
 }
