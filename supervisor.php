@@ -17,7 +17,7 @@ const MY_PARENT = 'parent';
 const IS_STOP_ALL = 'isStopAll';
 const IS_STOP_ME = 'isStopMe';
 const PID = 'pid';
-const PID_FIlE = 'pidFile';
+const PID_FILE = 'pidFile';
 const START_TIME = 'startTime';
 const LOG_NUM = 'log';
 
@@ -61,7 +61,7 @@ class supervisor extends \PMVC\PlugIn
 
     private function _runParentAsDaemon()
     {
-        if (empty($this[PID_FIlE])) {
+        if (empty($this[PID_FILE])) {
             return new BadMethodCallException(
                 'PID file is not defined'
             );
@@ -90,6 +90,10 @@ class supervisor extends \PMVC\PlugIn
         if (empty($this[MY_PARENT])) {
             if (TYPE_DAEMON === $this[TYPE]) {
                 $this->_runParentAsDaemon();
+            } else {
+                if (!empty($this[PID_FILE])) {
+                    $this->_createPidFile();
+                }
             }
             \PMVC\l(__DIR__.'/src/Monitor.php');
             foreach ($this[CALLBACKS] as $callbackId=>$callback) {
@@ -146,18 +150,18 @@ class supervisor extends \PMVC\PlugIn
 
     private function _createPidFile()
     {
-        $file = \PMVC\realpath($this[PID_FIlE]);
+        $file = \PMVC\realpath($this[PID_FILE]);
         if ($file) {
             throw new LogicException(
                 'PID file already exists, can\'t create. ['.$file.']'
             );
         }
-        file_put_contents($this[PID_FIlE], $this[PID]);
+        file_put_contents($this[PID_FILE], $this[PID]);
     }
 
     public function kill($signo=SIGTERM)
     {
-        $file = \PMVC\realpath($this[PID_FIlE]);
+        $file = \PMVC\realpath($this[PID_FILE]);
         if (!$file) {
             throw new BadMethodCallException(
                 'PID file is not found. ['.$file.'], Supervisor is not running.'

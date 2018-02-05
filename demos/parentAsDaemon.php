@@ -13,9 +13,14 @@ PMVC\initPlugIn(['supervisor'=>null],true); // for load constant
  */
 \PMVC\initPlugin([ 'error'=>['all'],  'debug'=>['output'=>'debug_cli'] ]);
 
+if (!in_array(\PMVC\value($GLOBALS, ['argv','1']), ['start', 'stop'])) {
+    echo 'run command as "php parentAsDaemon.php [stop|start]"'."\n";
+    exit();
+}
+
 $plug = PMVC\plug('supervisor', [
     sv\TYPE=> sv\TYPE_DAEMON,
-    sv\PID_FIlE=>'./pid',
+    sv\PID_FILE=>'./pid',
     sv\PARENT_INTO_DAEMON_SHUTDOWN=>function () {
         echo 'Stop use "php parentAsDaemon.php stop"'."\n";
     }
