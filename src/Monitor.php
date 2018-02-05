@@ -39,6 +39,7 @@ class Monitor
             usleep(50000);
         }
         $plug->shutdown();
+        var_dump($plug[PID]);
         \PMVC\dev(function() use ($plug) {
             return $plug->log('Monitor was exited.');
         }, 'debug');

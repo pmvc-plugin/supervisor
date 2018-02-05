@@ -1,18 +1,19 @@
 <?php
-include("./vendor/autoload.php");
+include("../vendor/autoload.php");
 
 use PMVC\PlugIn\supervisor as sv;
 
 \PMVC\Load::plug();
-//\PMVC\addPlugInFolders(['../../']);
+\PMVC\addPlugInFolders(['../../']);
 \PMVC\initPlugIn(['supervisor'=>null],true); // for load constant
-var_dump(\PMVC\folders(_PLUGIN));
+
+\PMVC\plug('debug')->setLevel('debug');
 
 /**
  * Enable Debug mode
  * composer require pmvc-plugin/error pmvc-plugin/debug_cli
  */
-\PMVC\initPlugin([ 'error'=>['all'],  'debug'=>['output'=>'debug_cli'] ]);
+\PMVC\initPlugin([ 'error'=>['all'],  'debug'=>['output'=>'debug_cli'], 'dev'=>null ]);
 
 if (!in_array(\PMVC\value($GLOBALS, ['argv','1']), ['start', 'stop'])) {
     echo 'run command as "php parentAsDaemon.php [stop|start]"'."\n";

@@ -78,7 +78,6 @@ class supervisor extends \PMVC\PlugIn
                 );
                 break;
             default:
-                $this->shutdown();
                 exit(0);
         }
     }
@@ -153,7 +152,7 @@ class supervisor extends \PMVC\PlugIn
         $file = \PMVC\realpath($this[PID_FILE]);
         if ($file) {
             throw new LogicException(
-                'PID file already exists, can\'t create. ['.$file.']'
+                'PID file already exists, can not create. ['.$file.']'
             );
         }
         file_put_contents($this[PID_FILE], $this[PID]);
@@ -161,18 +160,21 @@ class supervisor extends \PMVC\PlugIn
 
     public function shutdown()
     {
-        if (is_callable($plug[PARENT_SHUTDOWN])) {
-            $plug[PARENT_SHUTDOWN]();
+        if (is_callable($this[PARENT_SHUTDOWN])) {
+            $this[PARENT_SHUTDOWN]();
         }
-        if (is_callable($this[PARENT_INTO_DAEMON_SHUTDOWN])) {
-            $this[PARENT_INTO_DAEMON_SHUTDOWN]();
-        }
-        $file = \PMVC\realpath($this[PID_FILE]);
+        $file = realpath($this[PID_FILE]); // need avoid cache don't use \PMVC\realpath
         if ($file) {
             \PMVC\dev(function() use ($file) {
                 return $this->log('Delete pid file. ['.$file.']');
             }, 'debug');
-            unlink($file);
+            $pid = trim(file_get_contents($file));
+            if ((int)$pid === $this[PID]) {
+                if (is_callable($this[PARENT_INTO_DAEMON_SHUTDOWN])) {
+                    $this[PARENT_INTO_DAEMON_SHUTDOWN]();
+                }
+                unlink($file);
+            }
         }
     }
 
@@ -187,9 +189,6 @@ class supervisor extends \PMVC\PlugIn
         $pid = trim(file_get_contents($file));
         if ($pid) {
             $result = $this->killPid($pid, $signo); 
-            if ($result) {
-                $this->shutdown();
-            }
         } else {
             throw new LogicException(
                 'Get PId failed'
