@@ -38,7 +38,7 @@ const PLUGIN = 'supervisor';
 // shutdown
 const CHILD_SHUTDOWN = 'childShutdown';
 const PARENT_SHUTDOWN = 'parentShutdown';
-const PARENT_INTO_DAEMON_SHUTDOWN = 'parentIntoDaemonShutdown';
+const PARENT_DAEMON_SHUTDOWN = 'parentDaemonShutdown';
 
 class supervisor extends \PMVC\PlugIn
 {
@@ -89,7 +89,7 @@ class supervisor extends \PMVC\PlugIn
             if (TYPE_DAEMON === $this[TYPE]) {
                 $this->_runParentAsDaemon();
             } else {
-                unset($this[PARENT_INTO_DAEMON_SHUTDOWN]);
+                unset($this[PARENT_DAEMON_SHUTDOWN]);
                 if (!empty($this[PID_FILE])) {
                     $this->_createPidFile();
                 }
@@ -170,8 +170,8 @@ class supervisor extends \PMVC\PlugIn
             }, 'debug');
             $pid = trim(file_get_contents($file));
             if ((int)$pid === $this[PID]) {
-                if (is_callable($this[PARENT_INTO_DAEMON_SHUTDOWN])) {
-                    $this[PARENT_INTO_DAEMON_SHUTDOWN]();
+                if (is_callable($this[PARENT_DAEMON_SHUTDOWN])) {
+                    $this[PARENT_DAEMON_SHUTDOWN]();
                 }
                 unlink($file);
             }
