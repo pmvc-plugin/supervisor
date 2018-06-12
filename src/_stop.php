@@ -26,6 +26,7 @@ class Stop
         foreach($this->caller[CHILDREN] as $pid => $child){
             $this->termOne($pid, $signal);
         }
+        $this->caller->shutdown();
     }
 
     public function termOne($pid, $signal = SIGTERM)

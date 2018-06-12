@@ -42,6 +42,7 @@ const PARENT_DAEMON_SHUTDOWN = 'parentDaemonShutdown';
 
 class supervisor extends \PMVC\PlugIn
 {
+    private $_isShutdown = false;
     public function __construct()
     {
         $this[CALLBACKS] = [];
@@ -160,10 +161,17 @@ class supervisor extends \PMVC\PlugIn
 
     public function shutdown()
     {
+        if ($this->_isShutdown) {
+            \PMVC\dev(function() {
+                return $this->log('Shutdown already running, skip.');
+            }, 'debug');
+            return;
+        }
+        $this->_isShutdown = true;
         if (is_callable($this[PARENT_SHUTDOWN])) {
             $this[PARENT_SHUTDOWN]();
         }
-        $file = realpath($this[PID_FILE]); // need avoid cache don't use \PMVC\realpath
+        $file = is_file($this[PID_FILE]); // need avoid cache don't use \PMVC\realpath
         if ($file) {
             \PMVC\dev(function() use ($file) {
                 return $this->log('Delete pid file. ['.$file.']');

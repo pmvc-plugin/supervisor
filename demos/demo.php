@@ -1,14 +1,21 @@
 <?php
 include("../vendor/autoload.php");
 
-PMVC\Load::plug();
-PMVC\addPlugInFolders(['../../']);
+PMVC\Load::plug(
+    [ 
+        'error'=>['all'],
+        'debug'=>['output'=>'debug_cli'],
+        'dev'=>null
+    ],
+    ['../../']
+);
 
 /**
  * Enable Debug mode
  * composer require pmvc-plugin/error pmvc-plugin/debug_cli
  */
-// \PMVC\initPlugin([ 'error'=>['all'], 'debug'=>['output'=>'debug_cli'] ]);
+ \PMVC\plug('debug')->setLevel('debug');
+
 
 $plug = PMVC\plug('supervisor');
 
