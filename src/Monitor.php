@@ -38,6 +38,10 @@ class Monitor
             // php will eat up your cpu if you don't have this
             usleep(50000);
         }
+
+        // Call shutdown for normal stop
+        $plug->shutdown();
+
         \PMVC\dev(function() use ($plug) {
             return $plug->log('Monitor was exited.');
         }, 'debug');
