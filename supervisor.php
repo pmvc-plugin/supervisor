@@ -171,8 +171,9 @@ class supervisor extends \PMVC\PlugIn
         if (is_callable($this[PARENT_SHUTDOWN])) {
             $this[PARENT_SHUTDOWN]();
         }
-        $file = is_file($this[PID_FILE]); // need avoid cache don't use \PMVC\realpath
-        if ($file) {
+        // need avoid cache don't use \PMVC\realpath
+        $file = realpath($this[PID_FILE]);
+        if (is_file($file)) {
             \PMVC\dev(function() use ($file) {
                 return $this->log('Delete pid file. ['.$file.']');
             }, 'debug');
