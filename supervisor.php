@@ -8,7 +8,6 @@ use LogicException;
 
 ${_INIT_CONFIG}[_CLASS] = __NAMESPACE__.'\supervisor';
 
-\PMVC\l(__DIR__.'/src/Signal.php');
 
 // storage
 const CALLBACKS = 'callbacks';
@@ -57,6 +56,7 @@ class supervisor extends \PMVC\PlugIn
 
     public function init()
     {
+        \PMVC\l(__DIR__.'/src/Signal.php');
         new Signal(); // call it in init to avoid infinity
     }
 
@@ -95,7 +95,6 @@ class supervisor extends \PMVC\PlugIn
                     $this->_createPidFile();
                 }
             }
-            \PMVC\l(__DIR__.'/src/Monitor.php');
             foreach ($this[CALLBACKS] as $callbackId=>$callback) {
                 $trigger = \PMVC\get($callback, TRIGGER); 
                 if (strlen($trigger)) {
@@ -107,6 +106,7 @@ class supervisor extends \PMVC\PlugIn
                     $this->start($callbackId);
                 }
             }
+            \PMVC\l(__DIR__.'/src/Monitor.php');
             new Monitor($monitorCallBack);
         }
     }

@@ -1,11 +1,12 @@
 <?php
-PMVC\Load::plug();
-PMVC\addPlugInFolders(['../']);
-class SupervisorTest extends PHPUnit_Framework_TestCase
+
+use PMVC_TestCase;
+
+class SupervisorTest extends PMVC_TestCase
 {
     private $_plug = 'supervisor';
 
-    function tearDown()
+    protected function teardown(): void
     {
         \PMVC\unplug($this->_plug);
     }
@@ -16,7 +17,7 @@ class SupervisorTest extends PHPUnit_Framework_TestCase
         print_r(PMVC\plug($this->_plug));
         $output = ob_get_contents();
         ob_end_clean();
-        $this->assertContains($this->_plug,$output);
+        $this->haveString($this->_plug,$output);
     }
 
     function testScript()

@@ -1,12 +1,14 @@
 <?php
+
 namespace PMVC\PlugIn\supervisor;
+
 class Signal 
 {
     public function __construct()
     {
         $arr = [SIGHUP, SIGINT, SIGTERM];
         foreach ($arr as $sign) {
-            pcntl_signal($sign, $this);
+            \pcntl_signal($sign, $this);
         }
     }
 

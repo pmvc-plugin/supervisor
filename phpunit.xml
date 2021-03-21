@@ -2,16 +2,16 @@
 <phpunit backupGlobals="false"
          backupStaticAttributes="false"
          colors="true"
-         bootstrap="vendor/autoload.php"
+         bootstrap="include_test.php"
          convertErrorsToExceptions="true"
          convertNoticesToExceptions="true"
          convertWarningsToExceptions="true"
          processIsolation="false"
          stopOnFailure="false"
-         syntaxCheck="false">
+         >
     <testsuites>
         <testsuite name="Application Test Suite">
-            <file>test.php</file>
+          <directory>./tests/</directory>
         </testsuite>
     </testsuites>
     <php>
