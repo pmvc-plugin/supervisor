@@ -56,7 +56,7 @@ class supervisor extends \PMVC\PlugIn
 
     public function init()
     {
-        \PMVC\l(__DIR__.'/src/Signal.php');
+        \PMVC\l(__DIR__.'/src/Signal');
         new Signal(); // call it in init to avoid infinity
     }
 
@@ -106,7 +106,7 @@ class supervisor extends \PMVC\PlugIn
                     $this->start($callbackId);
                 }
             }
-            \PMVC\l(__DIR__.'/src/Monitor.php');
+            \PMVC\l(__DIR__.'/src/Monitor');
             new Monitor($monitorCallBack);
         }
     }
