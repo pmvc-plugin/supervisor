@@ -1,4 +1,5 @@
 <?php
+namespace PMVC\PlugIn\supervisor;
 
 use PMVC_TestCase;
 
@@ -14,7 +15,7 @@ class SupervisorTest extends PMVC_TestCase
     function testPlugin()
     {
         ob_start();
-        print_r(PMVC\plug($this->_plug));
+        print_r(\PMVC\plug($this->_plug));
         $output = ob_get_contents();
         ob_end_clean();
         $this->haveString($this->_plug,$output);
@@ -22,7 +23,7 @@ class SupervisorTest extends PMVC_TestCase
 
     function testScript()
     {
-        $plug = PMVC\plug($this->_plug);
+        $plug = \PMVC\plug($this->_plug);
         $s = 'helloScript';
         @$plug->script(new fakeChild(), array($s, 0));
         $self = $this;
@@ -35,7 +36,7 @@ class SupervisorTest extends PMVC_TestCase
     function testDaemon()
     {
         $s = 'helloDaemon';
-        $plug = PMVC\plug($this->_plug);
+        $plug = \PMVC\plug($this->_plug);
         @$plug->daemon(new fakeDaemon(), [$s, 1]);
         @$plug->process(function() use ($plug) {
             $plug->forceStop();
@@ -45,7 +46,7 @@ class SupervisorTest extends PMVC_TestCase
 
     function testTrigger()
     {
-        $plug = PMVC\plug($this->_plug);
+        $plug = \PMVC\plug($this->_plug);
         $s = 'helloTrigger';
         $self = $this;
         @$childKey = $plug->script(new fakeChild(), array($s.'3', 3));
