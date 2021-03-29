@@ -1,16 +1,20 @@
 language: php
-dist: trusty
 sudo: required
 group: edge
- 
-php:
-  - 5.6
-  - 7.1
+
+jobs:
+  include:
+    - dist: trusty
+      php: 5.6
+    - dist: focal
+      php: 8.0 
  
 before_script:
   - composer self-update
   - composer install --prefer-source
-  - composer require phpunit/phpunit 4.8.35
+  - if [[ "$TRAVIS_PHP_VERSION" == '5.6' ]]; then composer require phpunit/phpunit 4.8.35; fi
+  - if [[ "$TRAVIS_PHP_VERSION" != '5.6' ]]; then composer require --ignore-platform-req=php phpunit/phpunit 9.5.0; fi
  
 script:
-  - vendor/bin/phpunit
+  - if [[ "$TRAVIS_PHP_VERSION" == '5.6' ]]; then vendor/bin/phpunit --no-configuration --bootstrap ./include_test.php ./tests-legacy/; fi
+  - if [[ "$TRAVIS_PHP_VERSION" != '5.6' ]]; then vendor/bin/phpunit -v; fi
