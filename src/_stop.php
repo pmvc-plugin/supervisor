@@ -1,33 +1,41 @@
 <?php
 namespace PMVC\PlugIn\supervisor;
-${_INIT_CONFIG}[_CLASS] = __NAMESPACE__.'\Stop';
+${_INIT_CONFIG}[_CLASS] = __NAMESPACE__ . '\Stop';
 class Stop
 {
     public function __invoke($signal = SIGTERM)
     {
-        if (SIGKILL===$signal) {
+        if (SIGKILL === $signal) {
             $this->caller[IS_STOP_ALL] = true;
-            \PMVC\dev(function(){
+            \PMVC\dev(function () {
                 return $this->caller->log('Ask force stopping children');
-            },'debug');
+            }, 'debug');
             $this->_termAll($signal);
-        } elseif (empty($this->caller[IS_STOP_ALL])){
+        } elseif (empty($this->caller[IS_STOP_ALL])) {
             $this->caller[IS_STOP_ALL] = true;
-            \PMVC\dev(function(){
+            \PMVC\dev(function () {
                 return $this->caller->log('Ask stopping children');
-            },'debug');
+            }, 'debug');
             $this->_termAll($signal);
         }
     }
 
     private function _termAll($signal = SIGTERM)
     {
-        foreach($this->caller[CHILDREN] as $pid => $parallel){
+        foreach ($this->caller[CHILDREN] as $pid => $parallel) {
+            \PMVC\dev(function () use ($parallel) {
+                return $this->caller->log(
+                    'Child Terminated by stop function [id: ' .
+                        $parallel->getId() .
+                        '][pid: ' .
+                        $parallel->getPid() .
+                        ']'
+                );
+            }, 'debug');
             $parallel->stop($signal);
         }
 
         // Call shutdown for force stop
         $this->caller->shutdown();
     }
-
 }

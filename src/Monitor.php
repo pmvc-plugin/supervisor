@@ -9,24 +9,20 @@ class Monitor
             return $plug->log('Monitor starting.');
         }, 'debug');
         while( empty($plug[IS_STOP_ALL]) || count($plug[CHILDREN]) ){
+            pcntl_signal_dispatch();
             $pid = pcntl_waitpid(-1, $status, WNOHANG);
             // Check for exited children
             $parallel = false;
             if(isset($plug[CHILDREN][$pid])){
                 $parallel = $plug[CHILDREN][$pid];
                 $exitCode = pcntl_wexitstatus($status);
-                \PMVC\dev(function() use ($plug, $pid, $exitCode) {
-                    return $plug->log(
-                        'Child '. $pid. ' was stopped with exit code of ['. $exitCode. ']'
-                    );
-                }, 'debug');
                 if( !$plug[IS_STOP_ALL] 
                     && 1 !== $exitCode 
                     && TYPE_DAEMON === $parallel[TYPE]
                 ){
                    $parallel->restart();
                 }
-                $plug->cleanPid($pid);
+                $plug->cleanPid($pid, $exitCode);
             }
             if (!count($plug[CHILDREN])) {
                 $plug[IS_STOP_ALL] = true;

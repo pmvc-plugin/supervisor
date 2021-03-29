@@ -166,18 +166,19 @@ class supervisor extends \PMVC\PlugIn
         if (is_callable($this[PARENT_SHUTDOWN])) {
             $this[PARENT_SHUTDOWN]();
         }
+        $this->stop();
         // need avoid cache don't use \PMVC\realpath
         $file = realpath($this[PID_FILE]);
         if (is_file($file)) {
-            \PMVC\dev(function () use ($file) {
-                return $this->log('Delete pid file. [' . $file . ']');
-            }, 'debug');
             $pid = trim(file_get_contents($file));
             if ((int) $pid === $this[PID]) {
                 if (is_callable($this[PARENT_DAEMON_SHUTDOWN])) {
                     $this[PARENT_DAEMON_SHUTDOWN]();
                 }
                 unlink($file);
+                \PMVC\dev(function () use ($file) {
+                    return $this->log('Delete pid file. [' . $file . ']');
+                }, 'debug');
             }
         }
     }
@@ -209,6 +210,7 @@ class supervisor extends \PMVC\PlugIn
         }
         $result = posix_kill($pid, $signo);
         if ($result) {
+            pcntl_signal_dispatch();
             return $result;
         } else {
             throw new LogicException('Kill process failed');
@@ -220,20 +222,38 @@ class supervisor extends \PMVC\PlugIn
         $this[CHILDREN][$pid] = $parallel;
     }
 
-    public function cleanPid($pid)
+    public function cleanPid($pid, $exitCode)
     {
-        $key = $this[CHILDREN][$pid]->getId();
+        $parallel = $this[CHILDREN][$pid];
+        $key = $parallel->getId();
         if (isset($this[QUEUE][$key])) {
             foreach ($this[QUEUE][$key] as $nextParallel) {
                 \PMVC\dev(function () use ($nextParallel) {
-                    return $this->log('Start queue: '. $key .' with [' . $nextParallel->getId(). ']');
+                    return $this->log(
+                        'Start queue: ' .
+                            $key .
+                            ' with [' .
+                            $nextParallel->getId() .
+                            ']'
+                    );
                 }, 'debug');
                 $nextParallel->start();
             }
             unset($this[QUEUE][$key]);
         }
-        $this[CHILDREN][$pid]->finish();
+        $this[CHILDREN][$pid]->finish($exitCode);
         unset($this[CHILDREN][$pid]);
+        \PMVC\dev(function () use ($parallel) {
+            return $this->log(
+                'Handle Clean Id [id: ' .
+                    $parallel->getId() .
+                    '][pid: ' .
+                    $parallel->getPid() .
+                    '][exit Code: ' .
+                    $parallel->getExitCode() .
+                    ']'
+            );
+        }, 'debug');
     }
 
     public function log($log)

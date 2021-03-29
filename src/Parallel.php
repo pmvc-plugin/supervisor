@@ -11,6 +11,7 @@ class Parallel extends HashMap
     private $_isTerminated;
     private $_id;
     private $_pid;
+    private $_exitCode;
 
     public function __construct(callable $func, $props)
     {
@@ -48,6 +49,11 @@ class Parallel extends HashMap
     public function getPid()
     {
         return $this->_pid;
+    }
+
+    public function getExitCode()
+    {
+        return $this->_exitCode;
     }
 
     public function setPid($pid)
@@ -110,13 +116,23 @@ class Parallel extends HashMap
         $this->_run();
     }
 
-    public function finish()
+    public function finish($exitCode = null)
     {
         $this->_isTerminated = $this->_time();
+        if (!is_null($exitCode)) {
+            $this->_exitCode = $exitCode;
+        }
         pcntl_signal_dispatch();
         \PMVC\dev(function () {
             $plug = \PMVC\plug(PLUGIN);
-            return $plug->log('Child Terminated [id: ' . $this->_id. '][pid: '.$this->_pid.']');
+            $payload = [
+                '[ID: ' . $this->_id . ']',
+                '[PID: ' . $this->_pid . ']',
+            ];
+            if (isset($this->_exitCode)) {
+                $payload[] = '[Exit code: ' . $this->_exitCode . ']';
+            }
+            return $plug->log('Child Handle Finish ' . join('', $payload));
         }, 'debug');
     }
 

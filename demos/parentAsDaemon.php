@@ -38,7 +38,7 @@ if ('stop' === \PMVC\value($GLOBALS, ['argv','1'])) {
 /**
  * Run with many time
  */
-$plug->daemon(new fakeCommand(), ['This is deamon', 0], 10);
+$plug->daemon(new fakeCommand(), ['This is deamon', 0]);
 
 /**
  * Run only once 
