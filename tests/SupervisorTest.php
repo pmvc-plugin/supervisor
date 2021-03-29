@@ -25,11 +25,11 @@ class SupervisorTest extends PMVC_TestCase
     {
         $plug = \PMVC\plug($this->_plug);
         $s = 'helloScript';
-        @$plug->script(new fakeChild(), array($s, 0));
+        $runId = @$plug->script(new fakeChild(), array($s, 0));
         $self = $this;
-        @$plug->process(function() use($plug, $self, $s){
+        @$plug->process(function() use($plug, $self, $s, $runId){
             $plug->stop();
-            $self->assertEquals($s,$plug['callbacks'][0]['args'][0]);
+            $self->assertEquals($s,$plug[PARALLELS][$runId]['args'][0]);
         });
     }
 
@@ -37,10 +37,10 @@ class SupervisorTest extends PMVC_TestCase
     {
         $s = 'helloDaemon';
         $plug = \PMVC\plug($this->_plug);
-        @$plug->daemon(new fakeDaemon(), [$s, 1]);
-        @$plug->process(function() use ($plug) {
+        $runId = @$plug->daemon(new fakeDaemon(), [$s, 1]);
+        @$plug->process(function() use ($plug, $runId) {
             $plug->forceStop();
-            $this->assertEquals('daemon',$plug['callbacks'][0]['type']);
+            $this->assertEquals('daemon',$plug[PARALLELS][$runId]['type']);
         });
     }
 
@@ -49,15 +49,15 @@ class SupervisorTest extends PMVC_TestCase
         $plug = \PMVC\plug($this->_plug);
         $s = 'helloTrigger';
         $self = $this;
-        @$childKey = $plug->script(new fakeChild(), array($s.'3', 3));
-        @$second = $plug->script(new fakeChild(), array($s.'4', 4), $childKey);
-        @$third = $plug->script(new fakeChild(), array($s.'5', 5), $second);
-        @$plug->process(function($callbackId, $pid) use($plug, $self, $second){
+        $childKey = $plug->script(new fakeChild(), array($s.'3', 3));
+        $second = $plug->script(new fakeChild(), array($s.'4', 4), $childKey);
+        $third = $plug->script(new fakeChild(), array($s.'5', 5), $second);
+        $plug->process(function($callbackId, $pid) use($plug, $self, $second){
             static $i = 0;
             if (!$i) {
-                $self->assertTrue(empty($plug['callbacks'][$second]['startTime']), 'Test first');
+                $self->assertTrue(empty($plug[PARALLELS][$second]->isStarted()), 'Test first');
             } else {
-                $self->assertFalse(empty($plug['callbacks'][$second]['startTime']), 'Test second');
+                $self->assertFalse(empty($plug[PARALLELS][$second]->isStarted()), 'Test second');
             }
             $i++;
         });

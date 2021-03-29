@@ -42,7 +42,7 @@ class Signal
         $plug = \PMVC\plug('supervisor');
         switch ($signo) {
             case SIGHUP:
-                $plug['start']->restart();
+                $this->restartAll();
                 break;
             case SIGINT:
             case SIGTERM:
@@ -66,6 +66,20 @@ class Signal
         $plug[IS_STOP_ME] = true;
         if (is_callable($plug[CHILD_SHUTDOWN])) {
             $plug[CHILD_SHUTDOWN]($signo);
+        }
+    }
+
+    private function restartAll()
+    {
+        $plug = \PMVC\plug(PLUGIN);
+        \PMVC\dev(function() use ($plug) {
+            return $plug->log('Restarting children');
+        }, 'debug');
+        foreach($plug[CHILDREN] as $pid => $parallel){
+            if (TYPE_DAEMON !== $parallel[TYPE]) {
+                continue;
+            }
+            $parallel->restart();
         }
     }
 }

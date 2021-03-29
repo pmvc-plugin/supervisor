@@ -1,6 +1,8 @@
 <?php
 include("../vendor/autoload.php");
 
+date_default_timezone_set("UTC");
+
 PMVC\Load::plug(
     [ 
         'error'=>['all'],
@@ -14,8 +16,7 @@ PMVC\Load::plug(
  * Enable Debug mode
  * composer require pmvc-plugin/error pmvc-plugin/debug_cli
  */
- \PMVC\plug('debug')->setLevel('debug');
-
+ \PMVC\plug('debug')->setLevel('debug, trace');
 
 $plug = PMVC\plug('supervisor');
 

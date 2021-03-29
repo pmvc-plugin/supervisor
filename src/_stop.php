@@ -10,35 +10,24 @@ class Stop
             \PMVC\dev(function(){
                 return $this->caller->log('Ask force stopping children');
             },'debug');
-            $this->termAll($signal);
-        }
-        if(empty($this->caller[IS_STOP_ALL])){
+            $this->_termAll($signal);
+        } elseif (empty($this->caller[IS_STOP_ALL])){
             $this->caller[IS_STOP_ALL] = true;
             \PMVC\dev(function(){
                 return $this->caller->log('Ask stopping children');
             },'debug');
-            $this->termAll($signal);
+            $this->_termAll($signal);
         }
     }
 
-    public function termAll($signal = SIGTERM)
+    private function _termAll($signal = SIGTERM)
     {
-        foreach($this->caller[CHILDREN] as $pid => $child){
-            $this->termOne($pid, $signal);
+        foreach($this->caller[CHILDREN] as $pid => $parallel){
+            $parallel->stop($signal);
         }
 
         // Call shutdown for force stop
         $this->caller->shutdown();
     }
 
-    public function termOne($pid, $signal = SIGTERM)
-    {
-        if(isset($this->caller[CHILDREN][$pid])){
-            \PMVC\dev(function() use ($pid){
-                return $this->caller->log('Process stopping child '.$pid);
-            },'debug');
-            $result = posix_kill($pid, $signal);
-            pcntl_signal_dispatch();
-        }
-    }
 }
