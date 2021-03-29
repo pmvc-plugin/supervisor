@@ -16,6 +16,7 @@ class Start
             case 0: //fork
                 $plug[MY_PARENT] = $plug[PID];
                 $plug[PID] = posix_setsid();
+                $parallel->setPid($plug[PID]);
                 pcntl_signal_dispatch();
                 if (TYPE_DAEMON === $parallel[TYPE]) {
                     \PMVC\dev(function () use ($plug) {

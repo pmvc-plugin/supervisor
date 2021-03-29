@@ -7,12 +7,14 @@ use UnexpectedValueException;
 use LogicException;
 
 \PMVC\l(__DIR__ . '/src/Parallel');
+\PMVC\l(__DIR__ . '/src/Timeout');
 
 ${_INIT_CONFIG}[_CLASS] = __NAMESPACE__ . '\supervisor';
 
 // storage
 const PARALLELS = 'parallels';
 const CHILDREN = 'children';
+const MONITOR = 'monitor';
 const MY_PARENT = 'parent';
 const IS_STOP_ALL = 'isStopAll';
 const IS_STOP_ME = 'isStopMe';
@@ -34,6 +36,8 @@ const QUEUE = 'queue';
 const ARGS = 'args';
 const INTERVAL = 'interval';
 const INTERVAL_FUNCTION = 'intervalFunction';
+const TIMEOUT = 'timeout';
+const TIMEOUT_FUNCTION = 'timeoutFunction';
 const PLUGIN = 'supervisor';
 
 // shutdown
@@ -83,7 +87,8 @@ class supervisor extends \PMVC\PlugIn
 
     public function process(callable $monitorCallBack = null)
     {
-        if (empty($this[MY_PARENT])) {
+        if (empty($this[MY_PARENT]) && empty($this[MONITOR])) {
+            $this[MONITOR] = true;
             if (TYPE_DAEMON === $this[TYPE]) {
                 $this->_runParentAsDaemon();
             } else {
@@ -104,7 +109,7 @@ class supervisor extends \PMVC\PlugIn
                 }
             }
             \PMVC\l(__DIR__ . '/src/Monitor');
-            new Monitor($monitorCallBack);
+            $this[MONITOR] = new Monitor($monitorCallBack);
         }
     }
 
@@ -125,8 +130,8 @@ class supervisor extends \PMVC\PlugIn
         callable $callback,
         array $args = [],
         $trigger = null,
-        $interval = 1,
-        $intervalFunction = 'sleep'
+        $interval = null,
+        $intervalFunction = null
     ) {
         $parallel = new Parallel($callback, [
             ARGS => $args,

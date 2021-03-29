@@ -16,13 +16,15 @@ class Monitor
             if(isset($plug[CHILDREN][$pid])){
                 $parallel = $plug[CHILDREN][$pid];
                 $exitCode = pcntl_wexitstatus($status);
+                $plug->cleanPid($pid, $exitCode);
+
                 if( !$plug[IS_STOP_ALL] 
                     && 1 !== $exitCode 
                     && TYPE_DAEMON === $parallel[TYPE]
                 ){
+                   // need restore after cleanPid
                    $parallel->restart();
                 }
-                $plug->cleanPid($pid, $exitCode);
             }
             if (!count($plug[CHILDREN])) {
                 $plug[IS_STOP_ALL] = true;

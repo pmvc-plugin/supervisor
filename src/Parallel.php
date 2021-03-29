@@ -1,5 +1,4 @@
 <?php
-
 namespace PMVC\PlugIn\supervisor;
 
 use PMVC\HashMap;
@@ -12,6 +11,7 @@ class Parallel extends HashMap
     private $_id;
     private $_pid;
     private $_exitCode;
+    private $_timeout;
 
     public function __construct(callable $func, $props)
     {
@@ -22,6 +22,14 @@ class Parallel extends HashMap
             $this->_id = spl_object_hash($this);
         }
         $this[CALLBACK] = $func;
+        if ($this[TYPE] === TYPE_DAEMON) {
+            if (empty($this[INTERVAL])) {
+                $this[INTERVAL] = 1;
+            }
+            if (empty($this[INTERVAL_FUNCTION])) {
+                $this[INTERVAL_FUNCTION] = 'sleep';
+            }
+        }
         $plug = \PMVC\plug(PLUGIN);
         $plug[PARALLELS][$this->_id] = $this;
     }
@@ -87,12 +95,27 @@ class Parallel extends HashMap
 
     public function call()
     {
-        call_user_func_array($this[CALLBACK], $this[ARGS]);
+        if ($this[TIMEOUT]) {
+            $this->clearTimeout();
+            $this->_timeout = new Timeout($this->getPid(), [
+                TIMEOUT => $this[TIMEOUT],
+                TIMEOUT_FUNCTION => $this[TIMEOUT_FUNCTION],
+            ]);
+            $this->_timeout->start();
+        }
+
+        call_user_func_array($this[CALLBACK], $this[ARGS] ?? []);
+
+        $this->clearTimeout();
         pcntl_signal_dispatch();
     }
 
     public function start()
     {
+        $plug = \PMVC\plug(PLUGIN);
+        if (!$plug[MONITOR]) {
+            return $plug->process();
+        }
         if ($this->_isStarted) {
             return !!trigger_error(
                 'Process [' .
@@ -116,8 +139,17 @@ class Parallel extends HashMap
         $this->_run();
     }
 
+    public function clearTimeout()
+    {
+        if (!empty($this->_timeout)) {
+            $this->_timeout->stop();
+            $this->_timeout = null;
+        }
+    }
+
     public function finish($exitCode = null)
     {
+        $this->clearTimeout();
         $this->_isTerminated = $this->_time();
         if (!is_null($exitCode)) {
             $this->_exitCode = $exitCode;
@@ -136,8 +168,11 @@ class Parallel extends HashMap
         }, 'debug');
     }
 
-    public function stop($signal = SIGTERM)
+    public function stop($signal = null)
     {
+        if (is_null($signal)) {
+            $signal = SIGTERM;
+        }
         $result = posix_kill($this->_pid, $signal);
         if ($result) {
             $this->finish();
