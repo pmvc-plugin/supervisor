@@ -30,6 +30,9 @@ class Parallel extends HashMap
                 $this[INTERVAL_FUNCTION] = 'sleep';
             }
         }
+        if (!isset($this[ARGS])) {
+            $this[ARGS] = [];
+        }
         $plug = \PMVC\plug(PLUGIN);
         $plug[PARALLELS][$this->_id] = $this;
     }
@@ -104,7 +107,7 @@ class Parallel extends HashMap
             $this->_timeout->start();
         }
 
-        call_user_func_array($this[CALLBACK], $this[ARGS] ?? []);
+        call_user_func_array($this[CALLBACK], $this[ARGS]);
 
         $this->clearTimeout();
         pcntl_signal_dispatch();

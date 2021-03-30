@@ -41,7 +41,8 @@ const TIMEOUT_FUNCTION = 'timeoutFunction';
 const PLUGIN = 'supervisor';
 
 // shutdown
-const CHILD_SHUTDOWN = 'childShutdown';
+const ON_FINISH = 'onFinish';
+const ON_EXIT = 'onExit';
 const PARENT_SHUTDOWN = 'parentShutdown';
 const PARENT_DAEMON_SHUTDOWN = 'parentDaemonShutdown';
 

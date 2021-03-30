@@ -2,7 +2,7 @@
 
 namespace PMVC\PlugIn\supervisor;
 
-class Signal 
+class Signal
 {
     public function __construct()
     {
@@ -15,19 +15,19 @@ class Signal
     /**
      * Handles signals.
      * SIGHUP: kill -HUP pid
-     * SIGINT: ctrl + c 
+     * SIGINT: ctrl + c
      * SIGTERM: kill pid
      */
     public function __invoke($signo)
     {
         $plug = \PMVC\plug('supervisor');
-        \PMVC\dev(function() use ($plug, $signo){
-            $name = [ 
-                SIGHUP  => 'SIGHUP',
-                SIGINT  => 'SIGINT',
+        \PMVC\dev(function () use ($plug, $signo) {
+            $name = [
+                SIGHUP => 'SIGHUP',
+                SIGINT => 'SIGINT',
                 SIGTERM => 'SIGTERM',
             ];
-            return $plug->log('Recieve '.$name[$signo]);
+            return $plug->log('Recieve ' . $name[$signo]);
         }, 'debug');
         if (empty($plug[MY_PARENT])) {
             return $this->_handleParent($signo);
@@ -47,7 +47,7 @@ class Signal
             case SIGINT:
             case SIGTERM:
             default:
-                \PMVC\dev(function() use ($plug) {
+                \PMVC\dev(function () use ($plug) {
                     return $plug->log('Ask start to shutting down...');
                 }, 'debug');
                 $term_count++;
@@ -63,19 +63,20 @@ class Signal
     private function _handleChild($signo)
     {
         $plug = \PMVC\plug('supervisor');
-        $plug[IS_STOP_ME] = true;
-        if (is_callable($plug[CHILD_SHUTDOWN])) {
-            $plug[CHILD_SHUTDOWN]($signo);
+        switch ($signo) {
+            default:
+                $plug[IS_STOP_ME] = true;
+                break;
         }
     }
 
     private function restartAll()
     {
         $plug = \PMVC\plug(PLUGIN);
-        \PMVC\dev(function() use ($plug) {
+        \PMVC\dev(function () use ($plug) {
             return $plug->log('Restarting children');
         }, 'debug');
-        foreach($plug[CHILDREN] as $pid => $parallel){
+        foreach ($plug[CHILDREN] as $pid => $parallel) {
             if (TYPE_DAEMON !== $parallel[TYPE]) {
                 continue;
             }
