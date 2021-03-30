@@ -1,7 +1,6 @@
 <?php
 include("../vendor/autoload.php");
 
-date_default_timezone_set("UTC");
 
 PMVC\Load::plug(
     [ 
@@ -44,7 +43,7 @@ class fakeCommand
     function __invoke($s, $exit)
     {
         $plug = PMVC\plug('supervisor');
-        echo $plug['pid'].'--'.$s."\n";
+        echo $plug['myParallel']->getPid().'--'.$s."\n";
     }
 }
 

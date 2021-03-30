@@ -19,7 +19,7 @@ class Parallel extends HashMap
         if (!empty($props[NAME])) {
             $this->_id = $props[NAME];
         } else {
-            $this->_id = spl_object_hash($this);
+            $this->_id = md5(spl_object_hash($this));
         }
         $this[CALLBACK] = $func;
         if ($this[TYPE] === TYPE_DAEMON) {
