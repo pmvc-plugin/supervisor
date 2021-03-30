@@ -10,7 +10,7 @@ use PMVC\PlugIn\supervisor\Parallel;
 PMVC\Load::plug(
     [ 
         'error'=>['all'],
-        'debug'=>['output'=>'debug_cli', 'level'=> 'debug, trace'],
+        'debug'=>['output'=>'debug_cli', 'level'=> 'debug'],
         'dev'=>null,
         'supervisor'=>null,
     ],
@@ -18,11 +18,24 @@ PMVC\Load::plug(
 );
 
 $parallel = new Parallel(function(){
-  echo "this is daemon timeout";
+  echo "this is daemon timeout <!--" .PHP_EOL;
   sleep(10);
+  echo "this is daemon timeout -->".PHP_EOL;
 }, [
   'type' => 'daemon',
-  'timeout' => 3 
+//  'timeout' => 3,
+  'onExit'  => function($parallel, $exitCode) {
+    \PMVC\v([
+      'exitCode' => $exitCode,
+      'pid' => $parallel->getPid()
+    ]);
+  }, 
+  'onFinish'=> function($parallel, $isCancel) {
+    \PMVC\v([
+      'cancel' => $isCancel,
+      'pid' => $parallel->getPid()
+    ]);
+  }
 ]);
 
 $parallel->start();

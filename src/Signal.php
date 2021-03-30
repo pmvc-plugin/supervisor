@@ -65,7 +65,10 @@ class Signal
         $plug = \PMVC\plug('supervisor');
         switch ($signo) {
             default:
-                $plug[IS_STOP_ME] = true;
+                if (!$plug[IS_STOP_ME]) {
+                  $plug[IS_STOP_ME] = true;
+                  $plug[MY_PARALLEL]->finish();
+                }
                 break;
         }
     }

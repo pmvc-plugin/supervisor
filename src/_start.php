@@ -15,8 +15,8 @@ class Start
         switch ($pid) {
             case 0: //fork
                 $plug[MY_PARENT] = $plug[PID];
-                $plug[PID] = posix_setsid();
-                $parallel->setPid($plug[PID]);
+                $plug[MY_PARALLEL] = $parallel;
+                $parallel->setPid(posix_setsid());
                 pcntl_signal_dispatch();
                 if (TYPE_DAEMON === $parallel[TYPE]) {
                     \PMVC\dev(function () use ($plug) {
@@ -36,7 +36,11 @@ class Start
                     }, 'debug');
                     $parallel->call();
                 }
-                exit(1);
+                if ($plug[IS_STOP_ME]) {
+                  exit(0); // simulate cancel exit code
+                } else {
+                  exit(1);
+                }
             case -1: // for fail
                 throw new UnexpectedValueException($plug->log('Fork fail.'));
             default:

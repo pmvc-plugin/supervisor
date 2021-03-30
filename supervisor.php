@@ -16,12 +16,11 @@ const PARALLELS = 'parallels';
 const CHILDREN = 'children';
 const MONITOR = 'monitor';
 const MY_PARENT = 'parent';
-const IS_STOP_ALL = 'isStopAll';
-const IS_STOP_ME = 'isStopMe';
+const MY_PARALLEL = 'myParallel';
 const PID = 'pid';
 const PID_FILE = 'pidFile';
-const START_TIME = 'startTime';
 const LOG_NUM = 'log';
+const RESULT = 'result';
 
 // parent and child
 const TYPE = 'type';
@@ -41,8 +40,11 @@ const TIMEOUT_FUNCTION = 'timeoutFunction';
 const PLUGIN = 'supervisor';
 
 // shutdown
+const SIGNAL = 'signal';
 const ON_FINISH = 'onFinish';
 const ON_EXIT = 'onExit';
+const IS_STOP_ALL = 'isStopAll';
+const IS_STOP_ME = 'isStopMe';
 const PARENT_SHUTDOWN = 'parentShutdown';
 const PARENT_DAEMON_SHUTDOWN = 'parentDaemonShutdown';
 
@@ -201,7 +203,7 @@ class supervisor extends \PMVC\PlugIn
         }
         $pid = trim(file_get_contents($file));
         if ($pid) {
-            $result = $this->killPid($pid, $signo);
+            return $this->killPid($pid, $signo);
         } else {
             throw new LogicException('Get PId failed');
         }
@@ -247,7 +249,7 @@ class supervisor extends \PMVC\PlugIn
             }
             unset($this[QUEUE][$key]);
         }
-        $this[CHILDREN][$pid]->finish($exitCode);
+        $parallel->finish($exitCode);
         unset($this[CHILDREN][$pid]);
         \PMVC\dev(function () use ($parallel) {
             return $this->log(
@@ -264,8 +266,7 @@ class supervisor extends \PMVC\PlugIn
 
     public function log($log)
     {
-        $isParent = empty($this['parent']) ? 'Parent' : 'Child';
-        $isParent .= ' ' . $this['pid'];
+        $isParent = empty($this[MY_PARENT]) ? 'Parent '.$this[PID] : 'Child '.$this[MY_PARALLEL]->getPid();
         list($sec, $ms) = explode('.', number_format(microtime(true), 3));
         $message =
             $isParent .

@@ -106,11 +106,12 @@ class Parallel extends HashMap
             ]);
             $this->_timeout->start();
         }
-
-        call_user_func_array($this[CALLBACK], $this[ARGS]);
-
+        $result = call_user_func_array($this[CALLBACK], $this[ARGS]);
         $this->clearTimeout();
         pcntl_signal_dispatch();
+        if (is_callable($this[ON_FINISH])) {
+            call_user_func($this[ON_FINISH], $this, $result);
+        }
     }
 
     public function start()
@@ -147,19 +148,26 @@ class Parallel extends HashMap
         if (!empty($this->_timeout)) {
             $this->_timeout->stop();
             $this->_timeout = null;
+            \PMVC\dev(function () {
+                $plug = \PMVC\plug(PLUGIN);
+                return $plug->log('Clear Timeout [' . $this->_pid. ']');
+            }, 'debug');
         }
     }
 
     public function finish($exitCode = null)
     {
+        $plug = \PMVC\plug(PLUGIN);
         $this->clearTimeout();
         $this->_isTerminated = $this->_time();
         if (!is_null($exitCode)) {
             $this->_exitCode = $exitCode;
+            if (is_callable($this[ON_EXIT])) {
+                call_user_func($this[ON_EXIT], $this, $this->_exitCode);
+            }
         }
         pcntl_signal_dispatch();
-        \PMVC\dev(function () {
-            $plug = \PMVC\plug(PLUGIN);
+        \PMVC\dev(function () use($plug){
             $payload = [
                 '[ID: ' . $this->_id . ']',
                 '[PID: ' . $this->_pid . ']',
@@ -174,7 +182,7 @@ class Parallel extends HashMap
     public function stop($signal = null)
     {
         if (is_null($signal)) {
-            $signal = SIGTERM;
+            $signal = $this[SIGNAL] ? $this[SIGNAL] : SIGTERM;
         }
         $result = posix_kill($this->_pid, $signal);
         if ($result) {
