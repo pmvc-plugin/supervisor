@@ -35,6 +35,9 @@ class Parallel extends HashMap
         }
         $plug = \PMVC\plug(PLUGIN);
         $plug[PARALLELS][$this->_id] = $this;
+        if ($this[TRIGGER]) {
+            $plug->pushQueue($this[TRIGGER], $this);
+        }
     }
 
     public function isStarted()

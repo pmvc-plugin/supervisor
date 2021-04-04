@@ -37,11 +37,7 @@ class Start
                     }, 'debug');
                     $parallel->call();
                 }
-                if ($plug[IS_STOP_ME]) {
-                  exit(0); // simulate cancel exit code
-                } else {
-                  exit(1);
-                }
+                exit(1);
             case -1: // for fail
                 throw new UnexpectedValueException($plug->log('Fork fail.'));
             default:

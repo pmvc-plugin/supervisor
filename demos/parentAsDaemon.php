@@ -26,7 +26,7 @@ $plug = PMVC\plug('supervisor', [
     sv\TYPE=> sv\TYPE_DAEMON,
     sv\PID_FILE=>'./pid',
     sv\PARENT_DAEMON_SHUTDOWN=>function () {
-        echo 'Stop use "php parentAsDaemon.php stop"'."\n";
+        echo 'Stop by "php parentAsDaemon.php stop"'."\n";
     }
 ]);
 

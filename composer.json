@@ -15,6 +15,7 @@
         "ext-pcntl": "*"
     },
     "require-dev": {
+        "pmvc-plugin/unit": "*",
         "pmvc-plugin/cli": "*",
         "pmvc-plugin/debug_cli": "*",
         "pmvc-plugin/error": "*",

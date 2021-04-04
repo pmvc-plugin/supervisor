@@ -6,10 +6,10 @@ use BadMethodCallException;
 use UnexpectedValueException;
 use LogicException;
 
+${_INIT_CONFIG}[_CLASS] = __NAMESPACE__ . '\supervisor';
+
 \PMVC\l(__DIR__ . '/src/Parallel');
 \PMVC\l(__DIR__ . '/src/Timeout');
-
-${_INIT_CONFIG}[_CLASS] = __NAMESPACE__ . '\supervisor';
 
 // storage
 const PARALLELS = 'parallels';
@@ -102,18 +102,21 @@ class supervisor extends \PMVC\PlugIn
             }
             foreach ($this[PARALLELS] as $parallelId => $parallel) {
                 $trigger = \PMVC\get($parallel, TRIGGER);
-                if (strlen($trigger)) {
-                    if (!isset($this[QUEUE][$trigger])) {
-                        $this[QUEUE][$trigger] = [];
-                    }
-                    $this[QUEUE][$trigger][] = $parallel;
-                } else {
+                if (!strlen($trigger)) {
                     $parallel->start();
                 }
             }
             \PMVC\l(__DIR__ . '/src/Monitor');
             $this[MONITOR] = new Monitor($monitorCallBack);
         }
+    }
+
+    public function pushQueue($triggerId, $parallel)
+    {
+        if (!isset($this[QUEUE][$triggerId])) {
+            $this[QUEUE][$triggerId] = [];
+        }
+        $this[QUEUE][$triggerId][$parallel->getId()] = $parallel;
     }
 
     public function script(
@@ -236,7 +239,8 @@ class supervisor extends \PMVC\PlugIn
         $key = $parallel->getId();
         if (isset($this[QUEUE][$key])) {
             foreach ($this[QUEUE][$key] as $nextParallel) {
-                \PMVC\dev(function () use ($nextParallel) {
+                $nextParallel->start();
+                \PMVC\dev(function () use ($nextParallel, $key) {
                     return $this->log(
                         'Start queue: ' .
                             $key .
@@ -245,7 +249,6 @@ class supervisor extends \PMVC\PlugIn
                             ']'
                     );
                 }, 'debug');
-                $nextParallel->start();
             }
             unset($this[QUEUE][$key]);
         }
@@ -264,9 +267,22 @@ class supervisor extends \PMVC\PlugIn
         }, 'debug');
     }
 
+    public function enableDebugMode($level = null)
+    {
+        if (is_null($level)) {
+            $level = 'debug';
+        }
+        \PMVC\initPlugIn([
+            'debug' => ['output' => 'debug_cli', 'level' => $level],
+            'dev' => null,
+        ]);
+    }
+
     public function log($log)
     {
-        $isParent = empty($this[MY_PARENT]) ? 'Parent '.$this[PID] : 'Child '.$this[MY_PARALLEL]->getPid();
+        $isParent = empty($this[MY_PARENT])
+            ? 'Parent ' . $this[PID]
+            : 'Child ' . $this[MY_PARALLEL]->getPid();
         list($sec, $ms) = explode('.', number_format(microtime(true), 3));
         $message =
             $isParent .

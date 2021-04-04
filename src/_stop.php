@@ -22,17 +22,19 @@ class Stop
 
     private function _termAll($signal = SIGTERM)
     {
-        foreach ($this->caller[CHILDREN] as $pid => $parallel) {
-            \PMVC\dev(function () use ($parallel) {
-                return $this->caller->log(
-                    'Child Terminated by stop function [id: ' .
-                        $parallel->getId() .
-                        '][pid: ' .
-                        $parallel->getPid() .
-                        ']'
-                );
-            }, 'debug');
-            $parallel->stop($signal);
+        if (!empty($this->caller[CHILDREN])) {
+            foreach ($this->caller[CHILDREN] as $pid => $parallel) {
+                \PMVC\dev(function () use ($parallel) {
+                    return $this->caller->log(
+                        'Child Terminated by stop function [id: ' .
+                            $parallel->getId() .
+                            '][pid: ' .
+                            $parallel->getPid() .
+                            ']'
+                    );
+                }, 'debug');
+                $parallel->stop($signal);
+            }
         }
 
         // Call shutdown for force stop
