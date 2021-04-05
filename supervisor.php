@@ -169,6 +169,21 @@ class supervisor extends \PMVC\PlugIn
         file_put_contents($this[PID_FILE], $this[PID]);
     }
 
+    private function _getPidFromFile($throw)
+    {
+        $file = $this[PID_FILE];
+        if (is_file($file)) {
+            $pid = trim(file_get_contents($file));
+            return (int) $pid;
+        } else {
+            if ($throw) {
+                throw new BadMethodCallException(
+                    'PID file is not found. [' . $file . ']'
+                );
+            }
+        }
+    }
+
     public function shutdown()
     {
         if ($this->_isShutdown) {
@@ -182,33 +197,22 @@ class supervisor extends \PMVC\PlugIn
             $this[PARENT_SHUTDOWN]();
         }
         $this->stop();
-        // need avoid cache don't use \PMVC\realpath
-        $file = realpath($this[PID_FILE]);
-        if (is_file($file)) {
-            $pid = trim(file_get_contents($file));
-            if ((int) $pid === $this[PID]) {
-                if (is_callable($this[PARENT_DAEMON_SHUTDOWN])) {
-                    $this[PARENT_DAEMON_SHUTDOWN]();
-                }
-                unlink($file);
-                \PMVC\dev(function () use ($file) {
-                    return $this->log('Delete pid file. [' . $file . ']');
-                }, DEBUG);
+        $pid = $this->_getPidFromFile(false);
+        if ($pid === $this[PID]) {
+            if (is_callable($this[PARENT_DAEMON_SHUTDOWN])) {
+                $this[PARENT_DAEMON_SHUTDOWN]();
             }
+            unlink($this[PID_FILE]);
+            \PMVC\dev(function () {
+                $file = \PMVC\realpath($this[PID_FILE]);
+                return $this->log('Delete pid file. [' . $file . ']');
+            }, DEBUG);
         }
     }
 
     public function kill($signo = SIGTERM)
     {
-        $file = \PMVC\realpath($this[PID_FILE]);
-        if (!$file) {
-            throw new BadMethodCallException(
-                'PID file is not found. [' .
-                    $file .
-                    '], Supervisor is not running.'
-            );
-        }
-        $pid = trim(file_get_contents($file));
+        $pid = $this->_getPidFromFile(true);
         if ($pid) {
             return $this->killPid($pid, $signo);
         } else {
