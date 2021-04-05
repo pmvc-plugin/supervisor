@@ -44,7 +44,7 @@ class Signal
         $plug = \PMVC\plug('supervisor');
         switch ($signo) {
             case SIGUSR2:
-                \PMVC\v($this[CHILDREN]);
+                \PMVC\v($plug[CHILDREN]);
                 break;
             case SIGHUP:
                 $this->restartAll();

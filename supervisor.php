@@ -2,7 +2,6 @@
 
 namespace PMVC\PlugIn\supervisor;
 
-use BadMethodCallException;
 use UnexpectedValueException;
 use LogicException;
 
@@ -76,7 +75,7 @@ class supervisor extends \PMVC\PlugIn
     private function _runParentAsDaemon()
     {
         if (empty($this[PID_FILE])) {
-            return new BadMethodCallException('PID file is not defined');
+            return new UnexpectedValueException($this->log('PID file is not defined'));
         }
         $pid = pcntl_fork();
         switch ($pid) {
@@ -85,7 +84,7 @@ class supervisor extends \PMVC\PlugIn
                 $this->_createPidFile();
                 break;
             case -1: // for fail
-                return new UnexpectedValueException($this->log('Fork fail.'));
+                return new LogicException($this->log('Fork fail.'));
                 break;
             default:
                 exit(0);
@@ -177,8 +176,8 @@ class supervisor extends \PMVC\PlugIn
             return (int) $pid;
         } else {
             if ($throw) {
-                throw new BadMethodCallException(
-                    'PID file is not found. [' . $file . ']'
+                throw new UnexpectedValueException(
+                    $this->log('PID file is not found. [' . $file . ']')
                 );
             }
         }
@@ -215,8 +214,6 @@ class supervisor extends \PMVC\PlugIn
         $pid = $this->_getPidFromFile(true);
         if ($pid) {
             return $this->killPid($pid, $signo);
-        } else {
-            throw new LogicException('Get PId failed');
         }
     }
 
@@ -234,6 +231,10 @@ class supervisor extends \PMVC\PlugIn
         } else {
             throw new LogicException('Kill process failed');
         }
+    }
+
+    public function execGetStatus() {
+        $this->kill(SIGUSR2);
     }
 
     public function pid($pid, $parallel)
