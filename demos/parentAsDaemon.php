@@ -3,17 +3,9 @@ include("../vendor/autoload.php");
 
 use PMVC\PlugIn\supervisor as sv;
 
-\PMVC\Load::plug();
-\PMVC\addPlugInFolders(['../../']);
-\PMVC\initPlugIn(['supervisor'=>null],true); // for load constant
-
-
-/**
- * Enable Debug mode
- * composer require pmvc-plugin/error pmvc-plugin/debug_cli
- */
-\PMVC\initPlugin([ 'error'=>['all'],  'debug'=>['output'=>'debug_cli'],  'dispatcher'=>null, 'dev'=>null,]);
-\PMVC\plug('debug')->setLevel('debug');
+\PMVC\Load::plug(['supervisor'=>['debug'=>true]], [
+  '../../'
+]);
 
 
 if (!in_array(\PMVC\value($GLOBALS, ['argv','1']), ['start', 'stop'])) {

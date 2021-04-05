@@ -21,6 +21,7 @@ const PID = 'pid';
 const PID_FILE = 'pidFile';
 const LOG_NUM = 'log';
 const RESULT = 'result';
+const DEBUG = 'debug';
 
 // parent and child
 const TYPE = 'type';
@@ -67,6 +68,9 @@ class supervisor extends \PMVC\PlugIn
     {
         \PMVC\l(__DIR__ . '/src/Signal');
         new Signal(); // call it in init to avoid infinity
+        if ($this[DEBUG]) {
+            $this->enableDebugMode($this[DEBUG]);
+        }
     }
 
     private function _runParentAsDaemon()
@@ -170,7 +174,7 @@ class supervisor extends \PMVC\PlugIn
         if ($this->_isShutdown) {
             \PMVC\dev(function () {
                 return $this->log('Shutdown already running, skip.');
-            }, 'debug');
+            }, DEBUG);
             return;
         }
         $this->_isShutdown = true;
@@ -189,7 +193,7 @@ class supervisor extends \PMVC\PlugIn
                 unlink($file);
                 \PMVC\dev(function () use ($file) {
                     return $this->log('Delete pid file. [' . $file . ']');
-                }, 'debug');
+                }, DEBUG);
             }
         }
     }
@@ -248,7 +252,7 @@ class supervisor extends \PMVC\PlugIn
                             $nextParallel->getId() .
                             ']'
                     );
-                }, 'debug');
+                }, DEBUG);
             }
             unset($this[QUEUE][$key]);
         }
@@ -264,16 +268,16 @@ class supervisor extends \PMVC\PlugIn
                     $parallel->getExitCode() .
                     ']'
             );
-        }, 'debug');
+        }, DEBUG);
     }
 
     public function enableDebugMode($level = null)
     {
-        if (is_null($level)) {
-            $level = 'debug';
+        if (is_null($level) || true === $level) {
+            $level = DEBUG;
         }
         \PMVC\initPlugIn([
-            'debug' => ['output' => 'debug_cli', 'level' => $level],
+            DEBUG => ['output' => 'debug_cli', 'level' => $level],
             'dev' => null,
         ]);
     }
