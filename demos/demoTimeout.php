@@ -23,7 +23,7 @@ $parallel = new Parallel(function(){
   echo "this is daemon timeout -->".PHP_EOL;
 }, [
   'type' => 'daemon',
-//  'timeout' => 3,
+  'timeout' => 3,
   'onExit'  => function($parallel, $exitCode) {
     \PMVC\v([
       'exitCode' => $exitCode,

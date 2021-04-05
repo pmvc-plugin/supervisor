@@ -84,6 +84,7 @@ class Parallel extends HashMap
     public function setRunning($pid)
     {
         $this->setPid($pid);
+        $this->_isTerminated = null;
         $this->_isRunning = $this->_time();
     }
 
