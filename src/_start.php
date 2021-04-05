@@ -22,7 +22,7 @@ class Start
                 if (TYPE_DAEMON === $parallel[TYPE]) {
                     \PMVC\dev(function () use ($plug) {
                         return $plug->log('Start as daemon');
-                    }, 'debug');
+                    }, DEBUG);
                     while (!$plug[IS_STOP_ME]) {
                         $parallel->call();
                         // do sleep
@@ -34,7 +34,7 @@ class Start
                 } else {
                     \PMVC\dev(function () use ($plug) {
                         return $plug->log('Start as script');
-                    }, 'debug');
+                    }, DEBUG);
                     $parallel->call();
                 }
                 exit(1);
@@ -50,7 +50,7 @@ class Start
                             ' and pid ' .
                             $pid
                     );
-                }, 'debug');
+                }, DEBUG);
                 return $pid;
         }
     }

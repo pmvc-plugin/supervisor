@@ -30,7 +30,7 @@ class Signal
         $plug = \PMVC\plug('supervisor');
         \PMVC\dev(function () use ($plug, $signo) {
             return $plug->log('Recieve ' . $this->_signals[$signo]);
-        }, 'debug');
+        }, DEBUG);
         if (empty($plug[MY_PARENT])) {
             return $this->_handleParent($signo);
         } else {
@@ -54,7 +54,7 @@ class Signal
             default:
                 \PMVC\dev(function () use ($plug) {
                     return $plug->log('Ask start to shutting down...');
-                }, 'debug');
+                }, DEBUG);
                 $term_count++;
                 if ($term_count < 5) {
                     $plug->stop($signo);
@@ -85,7 +85,7 @@ class Signal
         $plug = \PMVC\plug(PLUGIN);
         \PMVC\dev(function () use ($plug) {
             return $plug->log('Restarting children');
-        }, 'debug');
+        }, DEBUG);
         foreach ($plug[CHILDREN] as $pid => $parallel) {
             if (TYPE_DAEMON !== $parallel[TYPE]) {
                 continue;

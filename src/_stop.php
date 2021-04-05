@@ -9,13 +9,13 @@ class Stop
             $this->caller[IS_STOP_ALL] = true;
             \PMVC\dev(function () {
                 return $this->caller->log('Ask force stopping children');
-            }, 'debug');
+            }, DEBUG);
             $this->_termAll($signal);
         } elseif (empty($this->caller[IS_STOP_ALL])) {
             $this->caller[IS_STOP_ALL] = true;
             \PMVC\dev(function () {
                 return $this->caller->log('Ask stopping children');
-            }, 'debug');
+            }, DEBUG);
             $this->_termAll($signal);
         }
     }
@@ -32,7 +32,7 @@ class Stop
                             $parallel->getPid() .
                             ']'
                     );
-                }, 'debug');
+                }, DEBUG);
                 $parallel->stop($signal);
             }
         }

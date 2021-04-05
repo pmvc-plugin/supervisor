@@ -142,7 +142,7 @@ class Parallel extends HashMap
         \PMVC\dev(function () {
             $plug = \PMVC\plug(PLUGIN);
             return $plug->log('Restore...' . $this->_id);
-        }, 'debug');
+        }, DEBUG);
         $this->stop();
         $this->_run();
     }
@@ -155,7 +155,7 @@ class Parallel extends HashMap
             \PMVC\dev(function () {
                 $plug = \PMVC\plug(PLUGIN);
                 return $plug->log('Clear Timeout [' . $this->_pid. ']');
-            }, 'debug');
+            }, DEBUG);
         }
     }
 
@@ -180,7 +180,7 @@ class Parallel extends HashMap
                 $payload[] = '[Exit code: ' . $this->_exitCode . ']';
             }
             return $plug->log('Child Handle Finish ' . join('', $payload));
-        }, 'debug');
+        }, DEBUG);
     }
 
     public function stop($signal = null)

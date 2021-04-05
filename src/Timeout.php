@@ -11,7 +11,7 @@ class Timeout extends Parallel
                 $plug = \PMVC\plug(PLUGIN);
                 \PMVC\dev(function () use ($pid, $plug) {
                     return $plug->log('Timeout runing...' . $pid);
-                }, 'debug');
+                }, DEBUG);
                 $timeout = $props[TIMEOUT];
                 $timeoutFunction = \pmvc\get(
                     $props,
@@ -24,7 +24,7 @@ class Timeout extends Parallel
                 posix_kill($pid, SIGKILL);
                 \PMVC\dev(function () use ($pid, $plug) {
                     return $plug->log('Kill by timeout...' . $pid);
-                }, 'debug');
+                }, DEBUG);
                 pcntl_signal_dispatch();
             },
             [

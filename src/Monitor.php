@@ -7,7 +7,7 @@ class Monitor
         $plug = \PMVC\plug(PLUGIN);
         \PMVC\dev(function() use ($plug) {
             return $plug->log('Monitor starting.');
-        }, 'debug');
+        }, DEBUG);
         while( empty($plug[IS_STOP_ALL]) || count($plug[CHILDREN]) ){
             pcntl_signal_dispatch();
             $pid = pcntl_waitpid(-1, $status, WNOHANG);
@@ -42,6 +42,6 @@ class Monitor
 
         \PMVC\dev(function() use ($plug) {
             return $plug->log('Monitor was exited.');
-        }, 'debug');
+        }, DEBUG);
     }
 }
