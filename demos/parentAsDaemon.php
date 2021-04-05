@@ -3,9 +3,10 @@ include '../vendor/autoload.php';
 
 use PMVC\PlugIn\supervisor as sv;
 
-\PMVC\Load::plug(['supervisor' => ['debug' => true]], ['../../']);
+\PMVC\Load::plug(['supervisor'=>false], ['../../']);
 
 $plug = PMVC\plug('supervisor', [
+    sv\DEBUG=>true,
     sv\TYPE => sv\TYPE_DAEMON,
     sv\PID_FILE => './pid',
     sv\PARENT_DAEMON_SHUTDOWN => function () {
