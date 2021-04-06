@@ -2,8 +2,14 @@
 
 namespace PMVC\PlugIn\supervisor;
 
+use RuntimeException;
+
+class TimeoutException extends RuntimeException {}
+
 class Timeout extends Parallel
 {
+    public $type = TIMEOUT;  
+
     public function __construct($pid, $props)
     {
         parent::__construct(
@@ -26,6 +32,7 @@ class Timeout extends Parallel
                     return $plug->log('Kill by timeout...' . $pid);
                 }, DEBUG);
                 pcntl_signal_dispatch();
+                throw new TimeoutException($pid.' Timeout.');
             },
             [
                 SIGNAL => SIGKILL,  

@@ -9,12 +9,9 @@ use PMVC\PlugIn\supervisor\Parallel;
  */
 PMVC\Load::plug(
     [ 
-        'error'=>['all'],
-        'debug'=>['output'=>'debug_cli', 'level'=> 'debug'],
-        'dev'=>null,
-        'supervisor'=>null,
+        'supervisor'=>['debug' => 'debug'],
     ],
-    ['../../']
+    ['../../',  __DIR__.'/../vendor/pmvc-plugin/', ]
 );
 
 $parallel = new Parallel(function(){
@@ -30,9 +27,9 @@ $parallel = new Parallel(function(){
       'pid' => $parallel->getPid()
     ]);
   }, 
-  'onFinish'=> function($parallel, $isCancel) {
+  'onFinish'=> function($parallel, $result) {
     \PMVC\v([
-      'cancel' => $isCancel,
+      'result' => $result,
       'pid' => $parallel->getPid()
     ]);
   }
