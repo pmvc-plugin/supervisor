@@ -196,7 +196,7 @@ class supervisor extends \PMVC\PlugIn
     }
 
     /**
-     * Run from child will kill child and parent
+     * Run from child will stop running child daemon loop and kill parent
      *
      * Run from parent will killall
      */
@@ -235,8 +235,8 @@ class supervisor extends \PMVC\PlugIn
     public function shutdownChildProcess()
     {
         if ($this[MY_PARENT] && !$this[IS_STOP_ME]) {
-            $this[IS_STOP_ME] = true;
-            $this[MY_PARALLEL]->finish();
+            $this[IS_STOP_ME] = true; // stop running loop
+            $this[MY_PARALLEL]->finish(); // call onFinish
         }
     }
 
