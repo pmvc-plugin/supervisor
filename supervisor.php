@@ -164,7 +164,9 @@ class supervisor extends \PMVC\PlugIn
         $file = \PMVC\realpath($this[PID_FILE]);
         if ($file) {
             throw new LogicException(
-                'PID file already exists, can not create. [' . $file . ']'
+                $this->log(
+                    'PID file already exists, can not create. [' . $file . ']'
+                )
             );
         }
         file_put_contents($this[PID_FILE], $this[PID]);
@@ -225,8 +227,8 @@ class supervisor extends \PMVC\PlugIn
             }
         } else {
             // run from child process
-            $this->kill(); 
-            $this->shutdownChildProcess(); 
+            $this->kill();
+            $this->shutdownChildProcess();
         }
     }
 
@@ -253,7 +255,7 @@ class supervisor extends \PMVC\PlugIn
     {
         if ((int) $pid === $this[PID]) {
             throw new LogicException(
-                'Can\'t use kill or killPid function kill self.'
+                $this->log('Can\'t use kill or killPid function kill self.')
             );
         }
         $result = posix_kill($pid, $signo);
@@ -261,7 +263,7 @@ class supervisor extends \PMVC\PlugIn
             pcntl_signal_dispatch();
             return $result;
         } else {
-            throw new LogicException('Kill process failed');
+            throw new LogicException($this->log('Kill process failed'));
         }
     }
 
