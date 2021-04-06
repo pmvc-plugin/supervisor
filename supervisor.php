@@ -207,8 +207,8 @@ class supervisor extends \PMVC\PlugIn
             return;
         }
         $this->_isShutdown = true;
-        $this->stop();
         if (empty($this[MY_PARENT])) {
+            $this->stop();
             if (is_callable($this[PARENT_SHUTDOWN])) {
                 $this[PARENT_SHUTDOWN]();
             }
@@ -223,6 +223,10 @@ class supervisor extends \PMVC\PlugIn
                     return $this->log('Delete pid file. [' . $file . ']');
                 }, DEBUG);
             }
+        } else {
+            // run from child process
+            $this->kill(); 
+            $this->shutdownChildProcess(); 
         }
     }
 

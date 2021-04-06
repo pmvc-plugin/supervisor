@@ -1,15 +1,20 @@
 <?php
 namespace PMVC\PlugIn\supervisor;
+
+use LogicException;
+
 ${_INIT_CONFIG}[_CLASS] = __NAMESPACE__ . '\Stop';
 class Stop
 {
     public function __invoke($signal = SIGTERM)
     {
         if ($this->caller[MY_PARENT]) {
-            $this->caller->kill(); 
-            $this->caller->shutdownChildProcess(); 
-            return;
-        } elseif (SIGKILL === $signal) {
+            return new LogicException(
+                $this->log('Not support call from Child process.')
+            );
+        }
+
+        if (SIGKILL === $signal) {
             $this->caller[IS_STOP_ALL] = true;
             \PMVC\dev(function () {
                 return $this->caller->log('Ask force stopping children');
