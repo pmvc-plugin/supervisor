@@ -44,7 +44,7 @@ class Signal
         $plug = \PMVC\plug('supervisor');
         switch ($signo) {
             case SIGUSR2:
-                \PMVC\v($plug[CHILDREN]);
+                $plug->getStatus();
                 break;
             case SIGHUP:
                 $this->restartAll();
@@ -72,10 +72,7 @@ class Signal
             case SIGUSR2:
                 break;
             default:
-                if (!$plug[IS_STOP_ME]) {
-                    $plug[IS_STOP_ME] = true;
-                    $plug[MY_PARALLEL]->finish();
-                }
+                $plug->shutdownChildProcess();
                 break;
         }
     }

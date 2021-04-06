@@ -42,7 +42,7 @@ class Start
                 throw new UnexpectedValueException($plug->log('Fork fail.'));
             default:
                 // parent process
-                $plug->pid($pid, $parallel);
+                $plug->addChildren($pid, $parallel);
                 \PMVC\dev(function () use ($plug, $pid, $parallel) {
                     return $plug->log(
                         'Child forked with id ' .

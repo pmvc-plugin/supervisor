@@ -5,7 +5,11 @@ class Stop
 {
     public function __invoke($signal = SIGTERM)
     {
-        if (SIGKILL === $signal) {
+        if ($this->caller[MY_PARENT]) {
+            $this->caller->kill(); 
+            $this->caller->shutdownChildProcess(); 
+            return;
+        } elseif (SIGKILL === $signal) {
             $this->caller[IS_STOP_ALL] = true;
             \PMVC\dev(function () {
                 return $this->caller->log('Ask force stopping children');

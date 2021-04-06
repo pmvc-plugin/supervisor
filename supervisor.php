@@ -75,7 +75,9 @@ class supervisor extends \PMVC\PlugIn
     private function _runParentAsDaemon()
     {
         if (empty($this[PID_FILE])) {
-            return new UnexpectedValueException($this->log('PID file is not defined'));
+            return new UnexpectedValueException(
+                $this->log('PID file is not defined')
+            );
         }
         $pid = pcntl_fork();
         switch ($pid) {
@@ -183,6 +185,19 @@ class supervisor extends \PMVC\PlugIn
         }
     }
 
+    private function _getParentPid($throw)
+    {
+        $pid = !empty($this[MY_PARENT])
+            ? $this[MY_PARENT]
+            : $this->_getPidFromFile($throw);
+        return $pid;
+    }
+
+    /**
+     * Run from child will kill child and parent
+     *
+     * Run from parent will killall
+     */
     public function shutdown()
     {
         if ($this->_isShutdown) {
@@ -192,26 +207,39 @@ class supervisor extends \PMVC\PlugIn
             return;
         }
         $this->_isShutdown = true;
-        if (is_callable($this[PARENT_SHUTDOWN])) {
-            $this[PARENT_SHUTDOWN]();
-        }
         $this->stop();
-        $pid = $this->_getPidFromFile(false);
-        if ($pid === $this[PID]) {
-            if (is_callable($this[PARENT_DAEMON_SHUTDOWN])) {
-                $this[PARENT_DAEMON_SHUTDOWN]();
+        if (empty($this[MY_PARENT])) {
+            if (is_callable($this[PARENT_SHUTDOWN])) {
+                $this[PARENT_SHUTDOWN]();
             }
-            unlink($this[PID_FILE]);
-            \PMVC\dev(function () {
-                $file = \PMVC\realpath($this[PID_FILE]);
-                return $this->log('Delete pid file. [' . $file . ']');
-            }, DEBUG);
+            $pid = $this->_getPidFromFile(false);
+            if ($pid === $this[PID]) {
+                if (is_callable($this[PARENT_DAEMON_SHUTDOWN])) {
+                    $this[PARENT_DAEMON_SHUTDOWN]();
+                }
+                unlink($this[PID_FILE]);
+                \PMVC\dev(function () {
+                    $file = \PMVC\realpath($this[PID_FILE]);
+                    return $this->log('Delete pid file. [' . $file . ']');
+                }, DEBUG);
+            }
         }
     }
 
+    public function shutdownChildProcess()
+    {
+        if ($this[MY_PARENT] && !$this[IS_STOP_ME]) {
+            $this[IS_STOP_ME] = true;
+            $this[MY_PARALLEL]->finish();
+        }
+    }
+
+    /**
+     * can not kill itself, need call from different pid.
+     */
     public function kill($signo = SIGTERM)
     {
-        $pid = $this->_getPidFromFile(true);
+        $pid = $this->_getParentPid(true);
         if ($pid) {
             return $this->killPid($pid, $signo);
         }
@@ -233,11 +261,20 @@ class supervisor extends \PMVC\PlugIn
         }
     }
 
-    public function execGetStatus() {
+    /**
+     * can not run by itself
+     */
+    public function execGetStatus()
+    {
         $this->kill(SIGUSR2);
     }
 
-    public function pid($pid, $parallel)
+    public function getStatus()
+    {
+        \PMVC\v($plug[CHILDREN]);
+    }
+
+    public function addChildren($pid, $parallel)
     {
         $this[CHILDREN][$pid] = $parallel;
     }
